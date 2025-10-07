@@ -350,6 +350,9 @@ text-align:left;
   .item-catalog {
     column-count: 1;
   }
+  .cart-table{
+    display: block;
+  }
 }
 
 @media(min-width: 600px) and (max-width: 800px){
