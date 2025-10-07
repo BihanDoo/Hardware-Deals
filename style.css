@@ -3,6 +3,9 @@ body {
       background: #f4f4f4;
       margin: 0;
       padding: 20px;
+      box-sizing: border-box;
+      
+      
 }
 
 h3{
@@ -98,6 +101,10 @@ h3{
   transition: background 0.3s;
 }
 
+
+
+
+
 .inner1card{
   display: flex;
   
@@ -121,6 +128,7 @@ h3{
 .card {
 /* width: 250px; */
 display: inline-block;
+box-sizing: border-box;
 width: auto;
 min-width: 220px;
 max-width: 100%;
@@ -186,6 +194,7 @@ display: flex;
     /* -----------------------------------------header thing -------------*/
 
     .title-header-thing {
+      box-sizing: border-box;
   display: flex;
   justify-content: space-between;
   border-radius: 10px;
@@ -403,16 +412,19 @@ text-align:left;
       margin: 30px auto;
       max-width: 900px;
       overflow: hidden;
+      box-sizing: border-box;
     }
     .cart-table th, .cart-table td {
       padding: 16px 10px;
       text-align: left;
       border-bottom: 1px solid #eee;
+      box-sizing: border-box;
     }
     .cart-table th {
       background: #f7f7f7;
       font-size: 1.1em;
       color: #333;
+      box-sizing: border-box;
     }
     .cart-table img {
       width: 60px;
@@ -421,6 +433,7 @@ text-align:left;
       border-radius: 8px;
       border: 1px solid #ddd;
       background: #eee;
+      box-sizing: border-box;
     }
     .cart-table .remove-btn {
       background: #e60000;
@@ -431,6 +444,7 @@ text-align:left;
       cursor: pointer;
       font-size: 0.95em;
       transition: background 0.2s;
+      box-sizing: border-box;
     }
     .cart-table .remove-btn:hover {
       background: #b30000;
@@ -471,7 +485,9 @@ text-align:left;
       background: #c94e00;
     }
     @media (max-width: 700px) {
-      .cart-table th, .cart-table td { padding: 8px 4px; }
+      .cart-table th, .cart-table td { padding: 8px 4px; 
+      overflow-x: auto;
+    }
       .cart-summary { flex-direction: column; gap: 10px; padding: 16px; }
       .cart-summary .total-label, .cart-summary .total-value { font-size: 1em; }
       .checkout-btn { width: 100%; padding: 10px; font-size: 1em; }
@@ -488,6 +504,7 @@ text-align:left;
     /* padding top and bottm, left n right */
     padding: 10px 5px;
     font-size: 0.9em;
+    overflow-x: auto;
   }
   .cart-summary {
     padding: 16px;
