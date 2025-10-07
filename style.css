@@ -343,10 +343,19 @@ text-align:left;
   }
 }
 
+@media(min-width: 600px) and (max-width: 800px){
+    .search-box{
+      
+
+
+      display: none;
+    }
+  }
+
 
 @media (max-width: 600px) {
   body {
-    padding: 0px;
+    padding: 10px;
   }
   .title-header-thing {
     flex-direction: column;
@@ -357,14 +366,7 @@ text-align:left;
     
   }
 
-  @media(min-width: 600px) and (max-width: 800px){
-    .search-box{
-      
-
-
-      display: none;
-    }
-  }
+  
   
 /* .item-catalog {
     column-count: 1;
