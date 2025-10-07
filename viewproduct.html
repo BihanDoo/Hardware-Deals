@@ -39,17 +39,50 @@
 
   <div class="vprcontainer">
     <div class="innercontainer">
-<div class="vprimg">
-      <img src="product-imgs/cordlessdrill.webp" alt="Cordless Drill">
+<!-- <div class="vprimg">
+
+  <div class="main-image">
+    <img id="mainProductImage" src="drilldemo/drill1.jpg" alt="Cordless Drill">
+  </div>
+  <div class="thumbnail-gallery">
+    <img src="drilldemo/drill1.jpg" alt="Main view" onclick="changeImage(this)">
+    <img src="drilldemo/2.jpg" alt="Side view" onclick="changeImage(this)">
+    <img src="drilldemo/3.jpg" alt="Kit view" onclick="changeImage(this)">
+  </div>
+
+     
+    </div> -->
+
+
+    <div class="vprimg">
+  <div class="slider-container">
+    <button class="slider-btn prev" onclick="changeSlide(-1)">❮</button>
+    <div class="main-image">
+      <img id="mainProductImage" src="drilldemo/drill1.jpg" alt="Cordless Drill">
     </div>
+    <button class="slider-btn next" onclick="changeSlide(1)">❯</button>
+  </div>
+
+  <div class="thumbnail-gallery">
+    <img src="drilldemo/drill1.jpg" class="active-thumb" onclick="setSlide(0)">
+    <img src="drilldemo/2.jpg" onclick="setSlide(1)">
+    <img src="drilldemo/3.jpg" onclick="setSlide(2)">
+    <img src="drilldemo/3.jpg" onclick="setSlide(3)">
+
+  </div>
+</div>
+
+    
+
+
     <div class="vprdetails">
       <div>
         <span class="vprbadge">20% OFF</span>
-        <span class="vproldprice">Rs.1500.00</span>
-        <span class="vprprice">Rs.1200.00</span>
+        <span class="vproldprice">Rs.8500.00</span>
+        <span class="vprprice">Rs.7200.00</span>
       </div>
       <div class="vprtitle">Cordless Drill</div>
-      <div class="vprdescription">A powerful cordless drill for all your home and professional needs. Includes battery and charger.</div>
+      <div class="vprdescription">A powerful cordless drill for all your home and professional needs. Includes battery, charger, and a bits set with a 90 degree bend.</div>
       <div class="vprseller">Sold by: <span class="sellername">Jaya Stores</span> <span class="ratings">⭐⭐⭐⭐☆</span> <span class="buyercount">(120)</span></div>
       
       <div class="vprmeta">Pickup &bull; In Stock &bull; Delivery available</div>
@@ -70,9 +103,17 @@
           <h2>Customer Reviews</h2>
           <div class="review-list">
             <div class="review">
-              <strong>Nuwan Perera</strong> <span style="color:#ffcc00;">★★★★★</span>
-              <div>Great drill! Battery lasts long and it feels sturdy.</div>
-            </div>
+            <strong>Nuwan Perera</strong> <span style="color:#ffcc00;">★★★★★</span>
+        <div>Meka maru</div>
+          <div class="review-images">
+            <img src="drilldemo/rev1.jpg" alt="Customer image" onclick="openReviewImage(this)">
+          <img src="drilldemo/rev2.jpg" alt="Customer image" onclick="openReviewImage(this)">
+          <img src="drilldemo/rev3.jpg" alt="Customer image" onclick="openReviewImage(this)">
+          </div>
+        </div>
+
+
+
             <div class="review">
               <strong>Sajini Fernando</strong> <span style="color:#ffcc00;">★★★★☆</span>
               <div>Works well for home use. Would recommend for DIYers.</div>
@@ -108,5 +149,67 @@
       </div>
     </div>
   </footer>
+
+
+  <script>
+  function changeImage(img) {
+    document.getElementById('mainProductImage').src = img.src;
+  }
+  
+
+  const images = [
+    "drilldemo/drill1.jpg",
+    "drilldemo/2.jpg",
+    "drilldemo/3.jpg",
+    "drilldemo/3.jpg"
+  ];
+
+  let currentSlide = 0;
+
+  function showSlide(index) {
+    const mainImage = document.getElementById("mainProductImage");
+    const thumbs = document.querySelectorAll(".thumbnail-gallery img");
+
+    if (index >= images.length) currentSlide = 0;
+    else if (index < 0) currentSlide = images.length - 1;
+    else currentSlide = index;
+
+   
+
+    mainImage.classList.add("fade-out");
+    setTimeout(() => {
+      mainImage.src = images[currentSlide];
+      mainImage.classList.remove("fade-out");
+    }, 200);
+
+    thumbs.forEach((img, i) => img.classList.toggle("active-thumb", i === currentSlide));
+  }
+
+  function changeSlide(direction) {
+    showSlide(currentSlide + direction);
+  }
+
+  function setSlide(index) {
+    showSlide(index);
+  }
+
+  function openReviewImage(img) {
+    const modal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImg");
+    modal.style.display = "flex";
+    modalImg.src = img.src;
+  }
+
+  function closeReviewImage() {
+    document.getElementById("imageModal").style.display = "none";
+  }
+</script>
+
+
+<div id="imageModal" class="image-modal" onclick="closeReviewImage()">
+  <span class="close-btn">&times;</span>
+  <img class="modal-content" id="modalImg">
+</div>
+
 </body>
 </html>

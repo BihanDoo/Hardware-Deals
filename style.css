@@ -334,6 +334,14 @@ text-align:left;
   min-width:200px;
   text-align:left;
 }
+@media (max-width:500px){
+  .footr1{
+    margin-bottom:16px;
+  }
+  .item-catalog {
+    column-count: 1;
+  }
+}
 
 
 @media (max-width: 600px) {
@@ -347,6 +355,15 @@ text-align:left;
     padding: 12px 15px;
     
     
+  }
+
+  @media(min-width: 600px) and (max-width: 800px){
+    .search-box{
+      
+
+
+      display: none;
+    }
   }
   
 /* .item-catalog {

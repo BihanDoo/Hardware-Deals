@@ -156,3 +156,202 @@
             .review strong {
                color: #333; 
               }
+
+
+
+  /* --- Product image gallery --- */
+.vprimg {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.main-image img {
+  width: 100%;
+  max-width: 320px;
+  height: 320px;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1.5px solid #eee;
+  background: #f7f7f7;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.thumbnail-gallery {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.thumbnail-gallery img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.thumbnail-gallery img:hover {
+  transform: scale(1.05);
+  border-color: #ed6510;
+}
+
+
+.review-images {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.review-images img {
+  width: 70px;
+  height: 70px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  object-fit: cover;
+
+}
+.review-images img:hover {
+  border-color: #ed6510;
+  transform: scale(1.05);
+}
+
+
+
+/* ---- Slider Gallery ---- */
+.slider-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slider-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.4);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background 0.2s;
+  z-index: 2;
+}
+
+.slider-btn:hover {
+  background: rgba(0,0,0,0.6);
+}
+
+.slider-btn.prev {
+  left: 8px;
+}
+
+.slider-btn.next {
+  right: 8px;
+}
+
+.main-image img {
+  width: 100%;
+  max-width: 320px;
+  height: 320px;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1.5px solid #eee;
+  background: #f7f7f7;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: opacity 0.3s ease;
+}
+
+.fade-out {
+  opacity: 0;
+}
+
+.thumbnail-gallery {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.thumbnail-gallery img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.thumbnail-gallery img:hover {
+  transform: scale(1.05);
+  border-color: #ed6510;
+}
+
+.thumbnail-gallery img.active-thumb {
+  border-color: #ed6510;
+}
+
+/* Optional: Adjust for small screens */
+@media (max-width: 600px) {
+  .slider-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
+  }
+}
+
+
+
+/* --- Review photo lightbox --- */
+.image-modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.85);
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(3px);
+}
+
+.image-modal img {
+  max-width: 90%;
+  max-height: 85%;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+  animation: zoomIn 0.3s ease;
+}
+
+.close-btn {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 2em;
+  color: white;
+  cursor: pointer;
+  user-select: none;
+  transition: 0.2s;
+}
+
+.close-btn:hover {
+  color: #ed6510;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
