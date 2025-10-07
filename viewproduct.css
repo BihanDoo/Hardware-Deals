@@ -1,0 +1,146 @@
+.vprcontainer {
+      max-width: 950px;
+      margin: 40px auto 30px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+      display: flex;
+      gap: 40px;
+      padding: 36px 32px;
+      flex-wrap: wrap;
+    }
+
+    .innercontainer {
+      max-width: 1200px;
+      
+      background: #fff;
+      
+      display: flex;
+      gap: 40px;
+      padding: 36px 32px;
+      flex-wrap: wrap;
+    }
+
+
+    .vprimg {
+
+      flex: 1 1 320px;
+      min-width: 260px;
+
+      max-width: 350px;
+      display: flex;
+      /* display:block; */
+      align-items: center;
+      justify-content: center;
+    }
+
+    .vprimg img {
+      width: 100%;
+      max-width: 320px;
+      height: 320px;
+
+      object-fit: contain;
+      border-radius: 10px;
+      border: 1.5px solid #eee;
+
+    background: #f7f7f7;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .vprdetails {
+      flex: 2 1 350px;
+      min-width: 260px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+
+    .vprtitle {
+
+      font-size: 2em;
+      font-weight: bold;
+      color: #ed6510;
+
+      margin-bottom: 4px;
+    }
+    .vprprice {
+      font-size: 1.3em;
+      color: #e60000;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+    .vproldprice {
+      text-decoration: line-through;
+      color: #999;
+      font-size: 1em;
+      margin-right: 10px;
+    }
+    .vprbadge {
+      background: orange;
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: 5px;
+      font-size: 1em;
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    .vprdescription {
+      font-size: 1.1em;
+      color: #444;
+      margin-bottom: 8px;
+    }
+    .vprseller {
+      font-size: 1em;
+      color: #555;
+      margin-bottom: 6px;
+    }
+    .vprseller .sellername {
+      color: #333;
+      font-weight: bold;
+    }
+    .vpractions {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .vpractions input[type="number"] {
+      width: 60px;
+      padding: 7px 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+      margin-right: 8px;
+    }
+    .vpractions .addtocartbutton {
+      width: auto;
+      padding: 12px 28px;
+      font-size: 1.1em;
+      border-radius: 6px;
+      background: #ed6510;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+    .vpractions .addtocartbutton:hover {
+      background: #c94e00;
+    }
+    .vprmeta {
+      font-size: 0.98em;
+      color: #888;
+      margin-top: 8px;
+    }
+    @media (max-width: 800px) {
+      .vprcontainer {
+        flex-direction: column;
+        gap: 20px;
+        padding: 18px 6vw;
+      }
+      .vprimg img {
+        max-width: 220px;
+        height: 220px;
+      }
+    }
+

@@ -1,0 +1,222 @@
+<!-- carddddddddddddddddddsssssssssssssssssssssssssssssssssssssssssssssssss------------------------------------------------------- -->
+
+
+
+
+<!-- item1 -->
+   <div class="card">
+      <img src="/product-imgs/hammer1.png" alt="Card Image" class="cardimg">
+      <div class="card-content">
+        <span class="badge">20% OFF</span>
+        <div class="pricetag">
+          <span class="oldprice">Rs.1500.00</span>
+          <span class="newprice">Rs.1200.00</span>
+        </div>
+        <h3 class="nametitle">Card Title</h3>
+        <p class="descriptiontext">card description</p>
+        <div class="sellerinfo">
+          <span class="soldbytext">Sold by:</span>
+          <span class="sellername">Jaya Stores</span>
+          <span class="ratings">⭐⭐⭐⭐☆ </span>
+          <span class="buyercount">(120)</span>
+        </div>
+        
+        <div class="innercardscontainer">
+
+        
+          <div class="inner1card">
+          <span class="favorite">Pickup</span>
+            </div>
+        <div class="inner1card">
+          <span class="favorite">In Stock</span>
+
+        </div>
+        
+        <br><span class="deliveryavailable">Delivery available.</span>
+        <button class="addtocartbutton">Add to Cart</button>
+        
+      </div>
+      </div>
+   </div>
+
+
+
+   <!-- item2 -->
+
+      <div class="card">
+      <img src="/product-imgs/denyogene1.jpeg" alt="Card Image" class="cardimg">
+      <div class="card-content">
+        <span class="badge">20% OFF</span>
+        <div class="pricetag">
+          <!-- <span class="oldprice">Rs.1500.00</span>
+          <span class="newprice">Rs.1200.00</span>
+          <span class="price"></span> -->
+        </div>
+        <h3 class="nametitle">Generator for rent</h3>
+        <p class="descriptiontext">generator rent per day</p>
+        <div class="sellerinfo">
+          <span class="soldbytext">Sold by:</span>
+          <span class="sellername">Nimal hardware supplies</span>
+          <span class="ratings">⭐⭐⭐⭐⭐ </span>
+          <span class="buyercount">(3)</span>
+        </div>
+        
+        <div class="innercardscontainer">
+
+        
+          <div class="inner1card">
+          <span class="favorite">Pickup</span>
+            </div>
+        <div class="inner1card">
+          <span class="favorite">In Stock</span>
+
+        </div>
+        
+        <br><span class="deliveryavailable">Call for Price.</span>
+        <button class="addtocartbutton"> 011 2 698532</button>
+        
+      </div>
+      </div>
+      </div>
+
+
+
+      <!-- item3 -->
+
+      <div class="card">
+      <img src="/product-imgs/hammer1.png" alt="Card Image" class="cardimg">
+      <div class="card-content">
+        <span class="badge">20% OFF</span>
+        <div class="pricetag">
+          <span class="oldprice">Rs.1500.00</span>
+          <span class="newprice">Rs.1200.00</span>
+        </div>
+        <h3 class="nametitle">Card Title</h3>
+        <p class="descriptiontext">card description</p>
+        <div class="sellerinfo">
+          <span class="soldbytext">Sold by:</span>
+          <span class="sellername">Jaya Stores</span>
+          <span class="ratings">⭐⭐⭐⭐☆ </span>
+          <span class="buyercount">(120)</span>
+        </div>
+        
+        <div class="innercardscontainer">
+
+        
+          <div class="inner1card">
+          <span class="favorite">Pickup</span>
+            </div>
+        <div class="inner1card">
+          <span class="favorite">In Stock</span>
+
+        </div>
+        
+        <br><span class="deliveryavailable">Delivery available.</span>
+        <button class="addtocartbutton">Add to Cart</button>
+        
+      </div>
+      </div>
+      </div>
+
+
+
+
+
+      <!-- mmmmmmm -->
+<div class="card">
+      <img src="" alt="Card Image" id="itemimage2" class="cardimg">
+      <div class="card-content">
+        <span class="badge" id="badge2">20% OFF</span>
+        <div class="pricetag">
+          <span class="oldprice" id="opr2"></span>
+          <span class="newprice" id="npr2">Rs.1200.00</span>
+        </div>
+        <h3 class="nametitle" id="title2">Card Title</h3>
+        <p class="descriptiontext" id="desc2">card description</p>
+        <div class="sellerinfo">
+          <span class="soldbytext" >Sold by:</span>
+          <span class="sellername" id="seller2">Jaya Stores</span>
+          <span class="ratings" id="ratings2">⭐⭐⭐⭐☆ </span>
+          <span class="buyercount" id="sold2">(120)</span>
+        </div>
+        
+        <div class="innercardscontainer">
+
+        
+          <div class="inner1card">
+          <span class="favorite" id="pickup2">Pickup</span>
+            </div>
+        <div class="inner1card">
+          <span class="favorite" id="instock2">In Stock</span>
+
+        </div>
+        
+        <br><span class="deliveryavailable" id="delivery2">Delivery available.</span>
+        <button class="addtocartbutton" id="addtoc2">Add to Cart</button>
+        
+      </div>
+      </div>
+   </div>
+<!-- end of items -->
+
+
+
+<script>
+  
+  fetch('products.json')
+    .then(response => response.json()) 
+  .then(data => {
+      
+      const product = data[0]; 
+
+      document.getElementById('itemimage1').src = product.image;
+      document.getElementById('badge1').textContent = product.badge;
+//if any old price exists
+      if( product.oldprice == "0") {
+        
+        document.getElementById('opr1').style.display = 'none';
+        document.getElementById('npr1').style.color = 'black';
+      } else {
+
+        document.getElementById('opr1').style.display = 'inline';
+        document.getElementById('opr1').textContent = product.oldprice
+        document.getElementById('npr1').style.color = '#e60000';
+      }
+
+      document.getElementById('title1').textContent = product.title;
+      document.getElementById('desc1').textContent = product.description;
+      document.getElementById('seller1').textContent = product.seller;
+      document.getElementById('sold1').textContent = `(${product.sold})`;
+      document.getElementById('pickup1').textContent = product.pickup ? 'Pickup' : '';
+      document.getElementById('instock1').textContent = product.instock ? 'In Stock' : 'Out of Stock';
+      document.getElementById('delivery1').textContent = product.delivery ? 'Delivery available.' : 'No delivery.';
+      document.getElementById('addtoc1').textContent = product.instock ? 'Add to Cart' : product.phone;
+
+
+
+      const product2 = data[1];
+      document.getElementById('itemimage2').src = product2.image;
+      document.getElementById('badge2').textContent = product2.badge;
+      
+      if( product2.oldprice == "0") {
+        document.getElementById('opr2').style.display = 'none';
+        document.getElementById('npr2').style.color = 'black';
+      } else {
+        document.getElementById('opr2').style.display = 'inline';
+        document.getElementById('opr2').textContent = product2.oldprice
+        document.getElementById('npr2').style.color = 'black';
+      }
+
+      document.getElementById('npr2').textContent = product2.newprice = "0"? '': product2.newprice;
+      document.getElementById('title2').textContent = product2.title;
+      document.getElementById('desc2').textContent = product2.description;
+      document.getElementById('seller2').textContent = product2.seller;
+      document.getElementById('sold2').textContent = `(${product2.sold})`;
+      document.getElementById('pickup2').textContent = product2.pickup ? 'Pickup' : '';
+      document.getElementById('instock2').textContent = product2.instock ? 'In Stock' : 'Out of Stock';
+      document.getElementById('delivery2').textContent = product2.delivery ? 'Delivery available.' : 'No delivery.';
+      document.getElementById('addtoc2').textContent = product2.instock ? 'Add to Cart' : 'Contact Seller';
+
+    });
+    
+</script>

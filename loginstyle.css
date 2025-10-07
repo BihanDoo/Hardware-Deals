@@ -1,0 +1,112 @@
+.login-container {
+      max-width: 370px;
+      margin: 60px auto 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+      padding: 36px 32px 28px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .login-logo {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+    .login-title {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #ed6510;
+      margin-bottom: 18px;
+      letter-spacing: 1px;
+    }
+    .login-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .login-form label {
+      font-size: 1em;
+      color: #333;
+      margin-bottom: 4px;
+    }
+    .login-form input,
+    .login-form input {
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1em;
+      background: #f7f7f7;
+      transition: border 0.2s;
+      
+    }
+
+    /* on focus, change bg color */
+    .login-form input:focus,
+    .login-form input:focus {
+      border: 1.5px solid #ed6510;
+      /* border color also changes */
+      outline: none;
+      background: #fffbe9;
+    }
+
+
+    .login-form .login-btn {
+      background: #ed6510;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 0;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+    .login-form .login-btn:hover {
+      background: #c94e00;
+    }
+    
+    .login-form .forgot-link {
+     text-align: right;
+      font-size: 0.95em;
+      margin-top: -10px;
+      margin-bottom: 8px;
+    }
+    .login-form .forgot-link a {
+      color: #ed6510;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+/* some basic styling */
+    .login-form .forgot-link a:hover {
+      color: #c94e00;
+      text-decoration: underline;
+    }
+
+
+    .login-form .signup-link {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 0.97em;
+    }
+    .login-form .signup-link a {
+      color: #ed6510;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.2s;
+    }
+    .login-form .signup-link a:hover {
+      color: #c94e00;
+      text-decoration: underline;
+    }
+    @media (max-width: 500px) {
+      .login-container {
+        padding: 18px 6vw 18px 6vw;
+        margin-top: 30px;
+      }
+    }

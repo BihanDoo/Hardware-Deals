@@ -1,0 +1,47 @@
+[
+  {
+    "title": "Hammer",
+    "description": "A hammer to do your everyday nailing jobs.",
+    "newprice": "1200.00",
+    "oldprice": "1500.00",
+    "image": "/product-imgs/hammer1.png",
+    "badge": "20% OFF",
+    "seller": "Jaya Stores",
+    "rating": 4,
+    "sold": 150,
+    "reviews": 34,
+    "stock": 15,
+    "id": 1,
+    "category": "Tools",
+    "tags": ["hammer", "tools", "nail"],
+    "pickup": true,
+    "delivery": true,
+    "callforprice": false,
+    "warranty": "1 year",
+    "phone": "0771234567",
+    "instock": true
+
+  },
+  {
+    "title": "Generator for rent",
+    "description": "generator rent per day",
+    "newprice": "0",
+    "oldprice": "0",
+    "image": "/product-imgs/denyogene1.jpeg",
+    "badge": "20% OFF",
+    "seller": "Nimal hardware supplies",
+    "rating": 5,
+    "sold": 10,
+    "reviews": 5,
+    "stock": 1,
+    "id": 2,
+    "category": "Tools",
+    "tags": ["generator", "tools", "rent"],
+    "pickup": true,
+    "delivery": false,
+    "callforprice": true,
+    "warranty": "NA",
+    "phone": "0771234567"
+  }
+  
+]

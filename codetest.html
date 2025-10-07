@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drag Scroll Slideshow</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    .slider {
+      width: 80%;
+      max-width: 700px;
+      overflow: hidden;
+      position: relative;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      cursor: grab;
+    }
+
+    .slides {
+      display: flex;
+      scroll-behavior: smooth;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .slides::-webkit-scrollbar {
+      display: none;
+    }
+
+    .slides img {
+  width: 100%;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 12px;
+  user-select: none;        /* prevent text selection */
+  pointer-events: auto;
+  -webkit-user-drag: none;  /* disable image drag */
+  user-drag: none;          /* disable image drag */
+}
+
+    .dots {
+      display: flex;
+      justify-content: center;
+      margin-top: 12px;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #bbb;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .dot.active {
+      background: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="slider" id="slider">
+    <div class="slides" id="slides">
+      <img src="https://picsum.photos/id/1018/800/400" alt="Image 1">
+      <img src="https://picsum.photos/id/1015/800/400" alt="Image 2">
+      <img src="https://picsum.photos/id/1019/800/400" alt="Image 3">
+    </div>
+  </div>
+  <div class="dots" id="dots"></div>
+
+  <script>
+    const slides = document.getElementById("slides");
+    const dotsContainer = document.getElementById("dots");
+    const images = slides.querySelectorAll("img");
+
+    let isDown = false;
+    let startX, scrollLeft;
+
+    // Drag scrolling
+    slides.addEventListener("mousedown", (e) => {
+      isDown = true;
+      slides.classList.add("active");
+      startX = e.pageX - slides.offsetLeft;
+      scrollLeft = slides.scrollLeft;
+    });
+    slides.addEventListener("mouseleave", () => isDown = false);
+    slides.addEventListener("mouseup", () => isDown = false);
+    slides.addEventListener("mousemove", (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - slides.offsetLeft;
+      const walk = (x - startX) * 1.5; // scroll speed
+      slides.scrollLeft = scrollLeft - walk;
+    });
+
+    // Create dots
+    images.forEach((_, i) => {
+      const dot = document.createElement("div");
+      dot.classList.add("dot");
+      if (i === 0) dot.classList.add("active");
+      dot.addEventListener("click", () => {
+        slides.scrollTo({ left: slides.offsetWidth * i, behavior: "smooth" });
+      });
+      dotsContainer.appendChild(dot);
+    });
+
+    const dots = document.querySelectorAll(".dot");
+
+    // Update dots on scroll
+    slides.addEventListener("scroll", () => {
+      const index = Math.round(slides.scrollLeft / slides.offsetWidth);
+      dots.forEach(dot => dot.classList.remove("active"));
+      if (dots[index]) dots[index].classList.add("active");
+    });
+  </script>
+</body>
+</html>
