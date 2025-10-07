@@ -52,8 +52,11 @@
         gap:28px;
         align-items:center;
         margin-bottom:26px}
-    @media (max-width:900px){.hero{grid-template-columns:1fr;
-        }}
+    @media (max-width:900px){
+        .hero{
+            grid-template-columns:1fr;
+        }
+        }
 
 
     .hero-card{background:linear-gradient(180deg,#ffffff,#fbfdff);
@@ -85,7 +88,11 @@
         border-radius:10px;
         border:0;
         font-weight:600;
-        cursor:pointer}
+        cursor:pointer
+    }
+
+
+
     .btn-primary{
         background:linear-gradient(90deg,var(--accent),var(--accent-2));
         background-color: #0ea5a4;
