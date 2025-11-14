@@ -28,6 +28,7 @@ if(isset($_SESSION["userName"]))
     </div>
 
     <div class="cart">
+      <button style=" align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; margin: font-size: 24px; color: black; font-weight: 300; line-height: 1; text-align: center; border: none;" onclick="window.location.href='addproduct.php'">+</button>
       <button>
         <img src="login.png" alt="Login" style="width:24px; height:24px;" onclick="window.location.href='login.html'">
       </button>
@@ -77,23 +78,24 @@ if(isset($_SESSION["userName"]))
         <div class="sellerinfo">
           <span class="soldbytext">Sold by:</span>
           <span class="sellername"><?php echo $row["storeName"] ; ?></span>
-          <span class="ratings">⭐⭐⭐⭐☆ </span>
-          <span class="buyercount">(10)</span>
+          <span class="ratings"><?php if($row["rating"]>0) echo str_repeat("⭐", $row["rating"]) ;echo "☆".str_repeat("☆", 4-$row["rating"]) ; ?>
+        </span>
+          <span class="buyercount">(<?php echo $row["reviewCount"] ; ?>)</span>
         </div>
         
         <div class="innercardscontainer">
 
         
           <div class="inner1card">
-          <span class="favorite">Pickup</span>
+          <span class="favorite"><?php if($row["pickup"]) echo "Pickup" ; else echo "Delivery" ; ?></span>
             </div>
         <div class="inner1card">
-          <span class="favorite">In Stock</span>
+          <span class="favorite"><?php if($row["inStock"]) echo "In Stock" ; else echo "Out of Stock" ; ?></span>
 
         </div>
         
-        <br><span class="deliveryavailable">Delivery available.</span>
-        <button class="addtocartbutton">Add to Cart</button>
+        <br><span class="deliveryavailable"><?php if($row["deliveryAvailable"]) echo "Delivery available." ; else echo "Call for information." ; ?></span>
+        <button class="addtocartbutton"><?php if($row["callToAction"]=="number") echo $row["callToAction"] ; else echo "Add to Cart" ; ?></button>
         
       </div>
       </div>
@@ -101,6 +103,8 @@ if(isset($_SESSION["userName"]))
 
 <?php
     }
+}else{
+  echo "<p>No products found</p>";
 }
 ?>
 
@@ -147,62 +151,4 @@ if(isset($_SESSION["userName"]))
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- <?php
-// Display index.html
-// readfile('index.html');
-?> -->
 
