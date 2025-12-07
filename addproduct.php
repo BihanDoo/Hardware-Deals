@@ -1,10 +1,37 @@
 <!DOCTYPE html>
-<?php session_start();
+<?php 
+
+session_start();
 if (!isset($_SESSION["userName"]))
 {
 	header('Location:login.html');
 
+
 }
+
+$con = mysqli_connect("localhost","root","","hardwaredeals");
+			if(!$con)
+			{	
+				die("Cannot upload the file, Please choose another file");		
+			}else{
+        $sql = "SELECT storeID FROM `stores` WHERE storeContactUEmail = '".$_SESSION["userName"]."'";
+        $storeid = mysqli_query($con,$sql);
+
+        $sql = "SELECT storeName FROM `stores` WHERE storeContactUEmail = '".$_SESSION["userName"]."'";
+        $result = mysqli_query($con, $sql);
+        $storename = "";
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $storename = $row["storeName"];
+            $storenamenotfound = 0;
+        }else{
+          $storename = "not found";
+          $storenamenotfound = 1;
+          
+        }
+      }
+    
+
 ?>
 <html lang="en">
 <head>
@@ -159,8 +186,8 @@ if (!isset($_SESSION["userName"]))
 
     <form class="addproduct-form" method="POST" action="addproduct.php" enctype="multipart/form-data" autocomplete="off">
       <div>
-        <label for="title">Product Title</label>
-        <input type="text" id="prodctitle" name="title" placeholder="Title" required>
+        <label for="prodctitle">Product Title</label>
+        <input type="text" id="prodctitle" name="prodctitle" placeholder="Title" required>
       </div>
       
       <div>
@@ -188,7 +215,7 @@ if (!isset($_SESSION["userName"]))
         </div>
         <div style="display: flex; align-items: center; justify-content: center;">
           <div class="checkbox-group">
-          <input type="checkbox" name="callforprice" id="callforprice">
+          <input type="checkbox" name="callforprice" id="callforprice" onchange="disablethis('Price', this.checked); document.getElementById('callToAction').required = this.checked;">
           <label for="callforprice">Call for price</label>
           </div>
         
@@ -200,9 +227,36 @@ if (!isset($_SESSION["userName"]))
         <input type="text" id="offTagDescription" name="offTagDescription" placeholder="20% OFF">
       </div>
 
+      <?php
+      // Fetch categories
+      $con = mysqli_connect("localhost", "root", "", "hardwaredeals");
+      $categories = array();
+      if($con) {
+          $categoryQuery = "SELECT categoryID, categoryName FROM categories";
+          $categoryResult = mysqli_query($con, $categoryQuery);
+          if($categoryResult) {
+              while($row = mysqli_fetch_assoc($categoryResult)) {
+                  $categories[] = $row;
+              }
+          }
+          mysqli_close($con);
+      }
+      ?>
+
+      <div>
+        <label for="category">Category</label>
+        <select id="category" name="category" required>
+            <option value="">-- Select Category --</option>
+            <!-- select all categories, snippet from AI -->
+            <?php foreach($categories as $cat): ?>
+                <option value="<?php echo htmlspecialchars($cat['categoryID']); ?>"><?php echo htmlspecialchars($cat['categoryName']); ?></option>
+            <?php endforeach; ?>
+        </select>
+      </div>
+
       <div>
         <label>Store</label>
-        <label id="storename">name</label>
+        <label id="storename"><?php echo $storename ?></label>
         
       </div>
 
@@ -215,27 +269,39 @@ if (!isset($_SESSION["userName"]))
 
       <div>
         <div class="checkbox-group">
-          <input type="checkbox" id="pickup" name="pickup">
+          <input type="checkbox" id="pickup" name="pickup" checked=true>
           <label for="pickup">Pickup Available</label>
-        </div>
-      </div>
-
-      <div>
-        <div class="checkbox-group">
-          <input type="checkbox" id="inStock" name="inStock">
-          <label for="inStock">In Stock</label>
-        </div>
-      </div>
-
-      <div>
-        <div class="checkbox-group">
-          <input type="checkbox" id="deliveryAvailable" name="deliveryAvailable">
+          <input type="checkbox" id="deliveryAvailable" name="deliveryAvailable" checked=true>
           <label for="deliveryAvailable">Delivery Available</label>
         </div>
+        
       </div>
 
-      <button type="submit" name="btnSubmit" class="addproduct-btn">Add Product</button>
+      <div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="inStock" name="inStock" checked=true>
+          <label for="inStock">In Stock</label>
+            
+          <input type="checkbox" id="forRent" name="forRent" onchange="disablethis('wholesale', this.checked)">
+          <label for="forRent">For Rent?</label>
+
+          <input type="checkbox" id="wholesale" name="wholesale" checked=true>
+          <label for="wholesale">Wholesale? (uncheck for retail)</label>
+        </div>
+      </div>
+
+      <div>
+      <label for="searchtags">Search Tags</label>
+      <input type="text" id="searchtags" name="searchtags" placeholder="separate by a comma">
+      </div>
+
       
+
+      <button type="submit" id="btnSubmit" name="btnSubmit" class="addproduct-btn">Add Product</button>
+      
+
+
+
       <div class="back-link">
         <a href="index.php">← Back to Home</a>
       </div>
@@ -264,7 +330,33 @@ if(isset($_POST["btnSubmit"])){
   if(isset($_POST["callforprice"])){
     $callToAction = $_POST["callToAction"];
   }else{
-    $callToAction = NULL;
+    if(isset($_POST["callToAction"])){
+      $callToAction = $_POST["callToAction"];
+    }else{
+      $callToAction = NULL;
+    }
+    
+  }
+
+  if(isset($_POST["pickup"])){
+    $pickup = 1;
+  }else{
+    $pickup = 0;
+  }
+
+  if(isset($_POST["forRent"])){
+    $forRent = 1;
+    // When forRent is checked, wholesale is disabled, so set a default value
+    // Based on database schema default is 1, but you may want to change this
+    $wholesale = 0; // or set to 1 if that's your preference
+  }else{
+    $forRent = 0;
+    if(isset($_POST["wholesale"])){
+      $wholesale =1;
+
+    }else{
+      $wholesale =0;
+    }
   }
 
 
@@ -276,7 +368,7 @@ if(isset($_POST["btnSubmit"])){
   }
 
 
-
+  $searchtags = $_POST["searchtags"];
 
 
   if(isset($_POST["inStock"])){
@@ -284,6 +376,9 @@ if(isset($_POST["btnSubmit"])){
   }else{
     $instock = 0;
   }
+
+
+  $category = $_POST["category"];
 
   $mainimage = "uploads/".basename($_FILES["mainimg"]["name"]);
 				move_uploaded_file($_FILES["mainimg"]["tmp_name"],$mainimage);
@@ -346,16 +441,18 @@ if(isset($_POST["btnSubmit"])){
 				die("Cannot upload the file, Please choose another file");		
 			}
     $sql = "SELECT storeID FROM `stores` WHERE storeContactUEmail = '".$_SESSION["userName"]."'";
-    $storeid = mysqli_query($con,$sql);
+    $storeidResult = mysqli_query($con,$sql);
+    $storeidRow = mysqli_fetch_assoc($storeidResult);
+    $storeid = $storeidRow["storeID"];
 
-      $sql = "INSERT INTO `products` (`productID`, `imgURL`, `offTagDescription`, `oldPrice`, `newPrice`, `title`, `description`, `soldByStoreID`, `reviewCount`, `rating`, `deliveryAvailable`, `callToAction`, `pickup`, `inStock`, `forRent`, `wholesale`, `searchTags`) 
-                VALUES (NULL, '".$mainimage."', '".$offTagDescription."', NULL, '".$Price."', '".$title."', '".$description."', '".$storeid."', NULL, NULL, '".$deliveryAvailable."', '".$callToAction."', '1', '".$instock."', '0', '1', NULL)";
+      $sql = "INSERT INTO `products` (`productID`, `imgURL`, `offTagDescription`, `oldPrice`, `newPrice`, `title`, `description`, `soldByStoreID`, `reviewCount`, `rating`, `deliveryAvailable`, `callToAction`, `pickup`, `inStock`, `forRent`, `wholesale`, `searchTags`,`categoryID`) 
+                VALUES (NULL, '".$mainimage."', '".$offTagDescription."', NULL, '".$Price."', '".$title."', '".$description."', '".$storeid."', NULL, NULL, '".$deliveryAvailable."', '".$callToAction."', '".$pickup."', '".$instock."', '".$forRent."', '".$wholesale."', '".$searchtags."','".$category."')";
 
-if(  mysqli_query($con,$sql))
+if(mysqli_query($con,$sql))
 {
   echo "Post uploaded Successfully";
 }else{
-  echo "error";
+  echo "Error: " . mysqli_error($con);
 }
 
 }
@@ -383,6 +480,33 @@ if(  mysqli_query($con,$sql))
   </footer>
 
   <script>
+        <?php if($storenamenotfound == 1) { ?>
+          document.addEventListener('DOMContentLoaded', function() {
+            disablethis("btnSubmit", true);
+            document.getElementById('btnSubmit').style.background = "#808080";
+          });
+        <?php } ?>
+      </script>
+
+  <script>
+
+      
+
+      function disablethis(view, boool) {
+        var elem = document.getElementById(view);
+        if (elem) {
+          elem.disabled = !!boool; // set based on boolean value passed
+        }
+      }
+      
+
+
+
+
+
+
+
+
     function previewImages(input) {
       const preview = document.getElementById('imagePreview');
       //preview.innerHTML = '';

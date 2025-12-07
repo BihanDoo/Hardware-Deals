@@ -70,7 +70,20 @@ if(isset($_SESSION["userName"]))
       <div class="card-content">
         <span class="badge"><?php echo $row["offTagDescription"] ; ?></span>
         <div class="pricetag">
+        <?php
+          if (isset($row["oldPrice"])) {
+            
+          
+          
+          
+          
+          ?>
           <span class="oldprice">Rs.<?php echo $row["oldPrice"] ; ?></span>
+
+
+          <?php
+          }
+          ?>
           <span class="newprice">Rs.<?php echo $row["newPrice"] ; ?></span>
         </div>
         <h3 class="nametitle"><?php echo $row["title"] ; ?></h3>
