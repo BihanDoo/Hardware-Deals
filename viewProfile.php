@@ -22,6 +22,42 @@ $user = null;
 if ($res && mysqli_num_rows($res) > 0) {
     $user = mysqli_fetch_assoc($res);
 }
+
+if (isset($_POST['switchRole']) && isset($_POST['userEmail'])) {
+    $newRole = $_POST['switchRole'] === 'Seller' ? 1 : 0;
+    $userEmail = $_POST['userEmail'];
+    if($newRole === (int)$user['isSeller']) {
+        
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
+    }else if($newRole === 1) {
+        //if switching to seller, also create store entry
+    $updateStmt = mysqli_prepare($con, "UPDATE users SET isSeller = ? WHERE uEmail = ?");
+    mysqli_stmt_bind_param($updateStmt, "is", $newRole, $userEmail);
+    mysqli_stmt_execute($updateStmt);
+
+    $sql = "INSERT INTO `stores` (`storeContactUEmail`, `storeName`, `storeBio`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `storeContactUEmail` = `storeContactUEmail`";
+    $storeName = $user['name'];
+
+    $storeBio = "Welcome to " . $storeName . "'s store!";
+    $insertStmt = mysqli_prepare($con, $sql);
+    mysqli_stmt_bind_param($insertStmt, "sss", $userEmail, $storeName, $storeBio);
+    mysqli_stmt_execute($insertStmt);
+    }else{
+        //if switching to buyer, no extra action needed
+        $updateStmt = mysqli_prepare($con, "UPDATE users SET isSeller = ? WHERE uEmail = ?");
+        mysqli_stmt_bind_param($updateStmt, "is", $newRole, $userEmail);
+        mysqli_stmt_execute($updateStmt);
+        
+    }
+    // Update the user's role in the database
+    
+
+    // Refresh the page to reflect changes
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit;
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -90,7 +126,10 @@ if ($res && mysqli_num_rows($res) > 0) {
         <p><strong>Address:</strong> <?php echo htmlspecialchars($user['address']); ?></p>
         <p><strong>Contact:</strong> <?php echo htmlspecialchars($user['contact']); ?></p>
         <p><strong>Role:</strong> <?php echo ($user['isSeller'] ? 'Seller' : 'Buyer'); ?>
-            <button>Switch to <?php echo ($user['isSeller'] ? 'Buyer' : 'Seller'); ?>?</button>
+        <form method="post" action="<?php echo $_SERVER['PHP_SELF'];?>">
+            <input type="hidden" name="userEmail" value="<?php echo htmlspecialchars($user['uEmail']); ?>">
+            <button type="submit" name="switchRole" value="<?php echo ($user['isSeller'] ? 'Buyer' : 'Seller'); ?>">Switch to <?php echo ($user['isSeller'] ? 'Buyer' : 'Seller'); ?>?</button>
+        </form>
         </p>
         <p><strong>Orders Completed:</strong> <?php echo htmlspecialchars($user['ordersCompleted']); ?></p>
 

@@ -103,6 +103,12 @@ if ($product) {
     <link rel="stylesheet" href="viewproduct.css">
 
 </head>
+<style>
+    .sr-only {
+        position: absolute;
+        left: -9999px;
+    }
+</style>
 
 <body>
     <header class="title-header-thing">
@@ -167,7 +173,12 @@ if ($product) {
             <div class="vprdetails">
                 <div>
                     <span class="vprbadge"><?php echo htmlspecialchars($product['offTagDescription']); ?></span>
-                    <span class="vproldprice">Rs.<?php echo number_format((float)$product['oldPrice'], 2); ?></span>
+                    <span class="vproldprice">Rs.<?php
+
+                                                    if (isset($product['oldPrice'])) {
+                                                        echo number_format((float)$product['oldPrice'], 2);
+                                                    }
+                                                    ?></span>
                     <span class="vprprice">Rs.<?php echo number_format((float)$product['newPrice'], 2); ?></span>
 
                 </div>
@@ -183,8 +194,15 @@ if ($product) {
                                                                                 $row = mysqli_fetch_assoc($result);
                                                                                 echo htmlspecialchars($row['storeName']);
                                                                             }
-                                                                            ?></span> <span class="ratings"><?php $rating = max(0, min(5, (int)$product['rating']));
-                                                                                                            echo str_repeat('⭐', $rating) . str_repeat('☆', 5 - $rating); ?><?php echo str_repeat('☆', 5 - $product['rating']); ?></span> <span class="buyercount">(<?php echo htmlspecialchars($product['buyerCount']); ?>)</span></div>
+                                                                            ?></span> <span class="ratings">
+                        <?php
+                        $rating = max(0, min(5, (int)$product['rating']));
+                        echo str_repeat('⭐', $rating) . str_repeat('☆', 5 - $rating);
+                        ?>
+                    </span>
+
+                    <span class="buyercount">(<?php echo htmlspecialchars($product['buyerCount']); ?>)</span>
+                </div>
 
                 <div class="vprmeta"><?php
                                         if ($product['forRent']) {
@@ -227,35 +245,36 @@ if ($product) {
 
                 <!-- -------------------------------------------------------------------- -->
 
+                <?php if (($_GET['review'] ?? '') === 'rating'): ?>
+                    <div style="color:crimson; margin:8px 0;">Please select a rating.</div>
+                <?php endif; ?>
+
                 <form class="review-form" action="submitreview.php" method="POST" enctype="multipart/form-data">
                     <h3 style="margin:0 0 8px 0; font-size:1.1rem;">Write a review</h3>
 
                     <div class="rating" style="display:flex; align-items:center; gap:8px; margin:8px 0;">
                         <span style="font-size:0.95rem; color:#555;">Your rating:</span>
+
                         <div style="display:flex; gap:6px;">
-                            <label style="cursor:pointer;">
-                                <input type="radio" name="rating" value="5" style="display:none;">
-                                <span title="5 stars" style="color:#ffb400; font-size:1.05rem;">★</span>
-                            </label>
-                            <label style="cursor:pointer;">
-                                <input type="radio" name="rating" value="4" style="display:none;">
-                                <span title="4 stars" style="color:#ffb400; font-size:1.05rem;">★</span>
-                            </label>
-                            <label style="cursor:pointer;">
-                                <input type="radio" name="rating" value="3" style="display:none;">
-                                <span title="3 stars" style="color:#ffb400; font-size:1.05rem;">★</span>
-                            </label>
-                            <label style="cursor:pointer;">
-                                <input type="radio" name="rating" value="2" style="display:none;">
-                                <span title="2 stars" style="color:#ffb400; font-size:1.05rem;">★</span>
-                            </label>
-                            <label style="cursor:pointer;">
-                                <input type="radio" name="rating" value="1" style="display:none;">
-                                <span title="1 star" style="color:#ffb400; font-size:1.05rem;">★</span>
-                            </label>
+                            <input id="rate5" type="radio" name="rating" value="5" required class="sr-only">
+                            <label for="rate5" style="cursor:pointer;"><span title="5 stars" style="color:#ffb400; font-size:1.05rem;">★</span></label>
+
+                            <input id="rate4" type="radio" name="rating" value="4" class="sr-only">
+                            <label for="rate4" style="cursor:pointer;"><span title="4 stars" style="color:#ffb400; font-size:1.05rem;">★</span></label>
+
+                            <input id="rate3" type="radio" name="rating" value="3" class="sr-only">
+                            <label for="rate3" style="cursor:pointer;"><span title="3 stars" style="color:#ffb400; font-size:1.05rem;">★</span></label>
+
+                            <input id="rate2" type="radio" name="rating" value="2" class="sr-only">
+                            <label for="rate2" style="cursor:pointer;"><span title="2 stars" style="color:#ffb400; font-size:1.05rem;">★</span></label>
+
+                            <input id="rate1" type="radio" name="rating" value="1" class="sr-only">
+                            <label for="rate1" style="cursor:pointer;"><span title="1 star" style="color:#ffb400; font-size:1.05rem;">★</span></label>
                         </div>
+
                         <small id="ratingHint" style="color:#777; margin-left:12px;">Click a star to rate</small>
                     </div>
+
 
                     <div style="display:flex; gap:12px; margin:8px 0;">
                         <label style="flex:1;">
@@ -381,11 +400,50 @@ if ($product) {
 
                     <div class="review-list">
 
-                        <div class="review">
-                            <strong>Nuwan Perera</strong> <span style="color:#ffcc00;">★★★★★</span>
-                            <div>Meka maru</div>
 
-                            <div class="review-images">
+
+                        <?php
+                        //productreviews table: productID, uEmail, reviewText, reviewID, rating
+                        //users table: uEmail, name
+                        //productimgs table: productID, imgURL, imgID
+
+                        $con = mysqli_connect("localhost", "root", "", "hardwaredeals");
+                        $sql = "SELECT r.reviewID, r.reviewText, r.rating, u.name FROM productreviews r JOIN users u ON r.uEmail = u.uEmail WHERE r.productID = '" . mysqli_real_escape_string($con, $productID) . "' ORDER BY r.reviewID DESC";
+
+                        $result = mysqli_query($con, $sql);
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            $reviewerName = htmlspecialchars($row['name']);
+                            $reviewText = htmlspecialchars($row['reviewText']);
+                            $reviewRating = (int)$row['rating'];
+                            $reviewID = (int)$row['reviewID'];
+
+                        ?>
+                            <div class="review">
+                                <strong><?php echo $reviewerName; ?></strong> <span style="color:#ffcc00;"><?php echo str_repeat('★', max(0, min(5, $reviewRating))); ?></span>
+                                <div><?php echo nl2br($reviewText); ?></div>
+                                <div class="review-images">
+                                    <?php
+                                    $sqlImages = "SELECT imgURL FROM reviewimgs WHERE reviewID = " . $reviewID . " ORDER BY imgID ASC";
+
+                                    $resultImages = mysqli_query($con, $sqlImages);
+                                    while ($rowImage = mysqli_fetch_assoc($resultImages)) {
+                                        $imgURL = htmlspecialchars($rowImage['imgURL']);
+                                        echo '<img src="' . $imgURL . '" alt="Customer image" onclick="openReviewImage(this)">';
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+                        <?php
+                        }
+
+
+
+                        mysqli_free_result($result);
+                        mysqli_close($con);
+                        ?>
+
+
+                        <!-- <div class="review-images">
                                 <img src="drilldemo/rev1.jpg" alt="Customer image" onclick="openReviewImage(this)">
                                 <img src="drilldemo/rev2.jpg" alt="Customer image" onclick="openReviewImage(this)">
                                 <img src="drilldemo/rev3.jpg" alt="Customer image" onclick="openReviewImage(this)">
@@ -393,7 +451,7 @@ if ($product) {
 
                         </div>
 
-
+                        
 
                         <div class="review">
                             <strong>Sajini Fernando</strong> <span style="color:#ffcc00;">★★★★★</span>
@@ -418,10 +476,10 @@ if ($product) {
                             <div>Thanks </div>
                         </div>
 
-                    </div>
-                    <style>
+                    </div> -->
+                        <style>
 
-                    </style>
+                        </style>
 
                 </section>
 
