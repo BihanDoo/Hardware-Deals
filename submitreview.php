@@ -43,9 +43,12 @@ if (mb_strlen($reviewText) > 500) {
 }
 
 // rating (required by updated schema). ensure integer and clamp to 1..5 (or 0 if you accept)
-$rating = intval($_POST['rating'] ?? 0);
-if ($rating < 0) $rating = 0;
-if ($rating > 5) $rating = 5;
+$rating = (int)($_POST['rating'] ?? 0);
+if ($rating < 1 || $rating > 5) {
+    header('Location: viewproduct.php?id=' . urlencode($productID) . '&review=rating');
+    exit;
+}
+
 
 // DB connection
 $con = mysqli_connect("localhost", "root", "", "hardwaredeals");
@@ -62,7 +65,9 @@ if (!$stmt) {
     header('Location: viewproduct.php?id=' . urlencode($productID) . '&review=fail');
     exit;
 }
+$productID = (int)$productID;
 mysqli_stmt_bind_param($stmt, "issi", $productID, $uEmail, $reviewText, $rating);
+
 $ok = mysqli_stmt_execute($stmt);
 if (!$ok) {
     header('Location: viewproduct.php?id=' . urlencode($productID) . '&review=fail');
@@ -120,7 +125,8 @@ if (!empty($_FILES['reviewImages']) && is_array($_FILES['reviewImages']['name'])
             $destPath = $uploadDir . DIRECTORY_SEPARATOR . $safeName;
             if (move_uploaded_file($tmpName, $destPath)) {
                 $webPath = 'uploads/reviews/' . $safeName;
-                $insImg = mysqli_prepare($con, "INSERT INTO productimgs (reviewID, imgURL) VALUES (?, ?)");
+                $insImg = mysqli_prepare($con, "INSERT INTO reviewimgs (reviewID, imgURL) VALUES (?, ?)");
+
                 if ($insImg) {
                     mysqli_stmt_bind_param($insImg, "is", $reviewID, $webPath);
                     mysqli_stmt_execute($insImg);
