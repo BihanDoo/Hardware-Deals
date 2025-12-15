@@ -218,7 +218,149 @@ if ($product) {
 
             <div>
 
-                <section class="reviews">
+                
+<!-- -------------------------------------------------------------------- -->
+
+                    <form class="review-form" action="submitreview.php" method="POST" enctype="multipart/form-data">
+            <h3 style="margin:0 0 8px 0; font-size:1.1rem;">Write a review</h3>
+
+            <div class="rating" style="display:flex; align-items:center; gap:8px; margin:8px 0;">
+              <span style="font-size:0.95rem; color:#555;">Your rating:</span>
+              <div style="display:flex; gap:6px;">
+                <label style="cursor:pointer;">
+                  <input type="radio" name="rating" value="5" style="display:none;">
+                  <span title="5 stars" style="color:#ffb400; font-size:1.05rem;">★</span>
+                </label>
+                <label style="cursor:pointer;">
+                  <input type="radio" name="rating" value="4" style="display:none;">
+                  <span title="4 stars" style="color:#ffb400; font-size:1.05rem;">★</span>
+                </label>
+                <label style="cursor:pointer;">
+                  <input type="radio" name="rating" value="3" style="display:none;">
+                  <span title="3 stars" style="color:#ffb400; font-size:1.05rem;">★</span>
+                </label>
+                <label style="cursor:pointer;">
+                  <input type="radio" name="rating" value="2" style="display:none;">
+                  <span title="2 stars" style="color:#ffb400; font-size:1.05rem;">★</span>
+                </label>
+                <label style="cursor:pointer;">
+                  <input type="radio" name="rating" value="1" style="display:none;">
+                  <span title="1 star" style="color:#ffb400; font-size:1.05rem;">★</span>
+                </label>
+              </div>
+              <small id="ratingHint" style="color:#777; margin-left:12px;">Click a star to rate</small>
+            </div>
+
+            <div style="display:flex; gap:12px; margin:8px 0;">
+              <label style="flex:1;">
+                <input id="reviewerName" name="name" type="text" placeholder="Your name" required style="width:100%; padding:8px 10px; border:1px solid #ddd; border-radius:6px;"
+                  value="<?php echo isset($user['name']) ? htmlspecialchars($user['name']) : ''; ?>">
+              </label>
+              
+            </div>
+
+            <!-- include productID so submitreview.php receives it directly -->
+            <input type="hidden" name="productID" value="<?php echo htmlspecialchars($productID); ?>">
+
+            <label style="display:block; margin:8px 0;">
+              <textarea id="reviewText" name="review" placeholder="Share your experience (max 500 chars)" maxlength="500" required oninput="updateCharCount(this)" style="width:100%; min-height:100px; padding:10px; border:1px solid #ddd; border-radius:6px; resize:vertical;"></textarea>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                <small id="charCount" style="color:#777;">0 / 500</small>
+                <small style="color:#999;">Be polite and specific — helps others decide</small>
+              </div>
+            </label>
+
+            <label style="display:block; margin:10px 0; color:#333;">
+              <div style="margin-bottom:6px;">Add photos (optional)</div>
+              <input id="reviewImages" name="reviewImages[]" type="file" accept="image/*" multiple onchange="previewReviewImages(event)" style="display:block;">
+              <div id="imagePreview" style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;"></div>
+            </label>
+
+            <div style="display:flex; gap:8px; margin-top:12px;">
+              <button type="submit" style="background:#0078d4; color:#fff; border:none; padding:10px 14px; border-radius:6px; cursor:pointer;">Submit Review</button>
+              <button type="button" onclick="this.closest('form').reset(); document.getElementById('imagePreview').innerHTML=''; document.getElementById('charCount').innerText='0 / 500';" style="background:#f3f3f3; border:1px solid #e0e0e0; padding:10px 14px; border-radius:6px; cursor:pointer;">Reset</button>
+              <div id="reviewStatus" style="margin-left:auto; align-self:center; color:green; font-size:0.95rem;"></div>
+            </div>
+
+            <script>
+              function updateCharCount(textarea) {
+                const count = textarea.value.length;
+                document.getElementById('charCount').innerText = count + ' / ' + textarea.maxLength;
+              }
+
+              function previewReviewImages(e) {
+                const preview = document.getElementById('imagePreview');
+                preview.innerHTML = '';
+                const files = Array.from(e.target.files).slice(0, 5); // limit previews to 5
+                files.forEach(file => {
+                  if (!file.type.startsWith('image/')) return;
+                  const reader = new FileReader();
+                  const wrapper = document.createElement('div');
+                  wrapper.style.width = '72px';
+                  wrapper.style.height = '72px';
+                  wrapper.style.border = '1px solid #eee';
+                  wrapper.style.borderRadius = '6px';
+                  wrapper.style.overflow = 'hidden';
+                  wrapper.style.display = 'flex';
+                  wrapper.style.alignItems = 'center';
+                  wrapper.style.justifyContent = 'center';
+                  reader.onload = () => {
+                    const img = document.createElement('img');
+                    img.src = reader.result;
+                    img.style.maxWidth = '100%';
+                    img.style.maxHeight = '100%';
+                    img.style.objectFit = 'cover';
+                    wrapper.appendChild(img);
+                  };
+                  reader.readAsDataURL(file);
+                  preview.appendChild(wrapper);
+                });
+              }
+
+              function submitReview(form) {
+                const name = form.querySelector('[name="name"]').value.trim();
+                const review = form.querySelector('[name="review"]').value.trim();
+                const ratingEl = form.querySelector('input[name="rating"]:checked');
+                if (!ratingEl) {
+                  document.getElementById('reviewStatus').style.color = 'crimson';
+                  document.getElementById('reviewStatus').innerText = 'Please select a rating';
+                  return;
+                }
+                if (!name || !review) {
+                  document.getElementById('reviewStatus').style.color = 'crimson';
+                  document.getElementById('reviewStatus').innerText = 'Please fill name and review';
+                  return;
+                }
+
+                // Simulate successful submit (replace with real submit / AJAX)
+                document.getElementById('reviewStatus').style.color = 'green';
+                document.getElementById('reviewStatus').innerText = 'Review submitted ✓';
+                setTimeout(() => { document.getElementById('reviewStatus').innerText = ''; }, 3000);
+
+                // Optionally append the review to the list for immediate feedback
+                const list = document.querySelector('.review-list');
+                if (list) {
+                  const item = document.createElement('div');
+                  item.className = 'review';
+                  item.innerHTML = '<strong>' + escapeHtml(name) + '</strong> <span style="color:#ffcc00;">' + '★'.repeat(parseInt(ratingEl.value)) + '</span>' +
+                                   '<div>' + escapeHtml(review) + '</div>';
+                  list.prepend(item);
+                }
+
+                form.reset();
+                document.getElementById('imagePreview').innerHTML = '';
+                document.getElementById('charCount').innerText = '0 / 500';
+              }
+
+              function escapeHtml(s) {
+                return s.replace(/[&<>"']/g, function(m) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; });
+              }
+            </script>
+          </form>
+
+          <!-- ------------------------------------------------------------------- -->
+
+          <section class="reviews">
                     <h2>Customer Reviews (3)</h2>
 
                     <div class="review-list">
@@ -271,6 +413,7 @@ if ($product) {
             </div>
 
         </div>
+    </div>
 
 
         <footer class="footer" style="margin-top:40px;">
