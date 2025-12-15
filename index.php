@@ -1,11 +1,30 @@
-<!DOCTYPE html>
 <?php session_start();
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  if (!isset($_SESSION["userName"])) {
+    header("Location: login.html");
+    exit;
+  }
+  $productID = $_POST['productID'];
+  $uEmail = $_SESSION["userName"];
+  //uEmail is same as userName in session
+  $con = mysqli_connect("localhost", "root", "", "hardwaredeals");
+  if (!$con) {
+    die("Cannot connect to DB Server");
+  }
+  $sql = "INSERT INTO `cart` (`uEmail`, `productID`, `qty`) VALUES ('$uEmail', '$productID', 1) ON DUPLICATE KEY UPDATE `qty` = `qty` + 1";
+  $result = mysqli_query($con, $sql);
+}
+
+
+
+
+
 if (!isset($_SESSION["userName"])) {
   //header('Location: login.html');
 
 } else {
   $username = $_SESSION["userName"];
-
+  //echo $username;
   $con = mysqli_connect("localhost", "root", "", "hardwaredeals");
   if (!$con) {
     die("Cannot connect to DB Server");
@@ -59,7 +78,7 @@ if (!isset($_SESSION["userName"])) {
         <?php } ?>
       </button>
       <button>
-        <img src="cart-icon.webp" alt="Cart" style=" height:24px;" onclick="window.location.href='cart.html'">
+        <img src="cart-icon.webp" alt="Cart" style=" height:24px;" onclick="window.location.href='cart.php'">
       </button>
 
     </div>
@@ -133,11 +152,19 @@ if (!isset($_SESSION["userName"])) {
 
               </div>
 
-              <br><span class="deliveryavailable"><?php if ($row["deliveryAvailable"]) echo "Delivery available.";
-                                                  else echo "Call for information."; ?></span>
-              <button class="addtocartbutton"><?php if ($row["callToAction"] == "number") echo $row["callToAction"];
-                                              else echo "Add to Cart"; ?></button>
+              <?php if ($row["deliveryAvailable"]) { ?>
 
+
+                <br><span class="deliveryavailable"><?php echo "Delivery available."; ?></span>
+                <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+                  <input type="hidden" name="productID" value="<?php echo $row['productID']; ?>">
+                  <button class="addtocartbutton"><?php echo "Add to Cart"; ?></button>
+                </form>
+
+              <?php } else { ?>
+                <br><span class="deliveryavailable"><?php echo "Call for information."; ?></span>
+                <button class="addtocartbutton"><?php echo $row["callToAction"]; ?></button>
+              <?php } ?>
             </div>
           </div>
         </div>
@@ -182,6 +209,9 @@ if (!isset($_SESSION["userName"])) {
   </footer>
 
 
+  <?php
+
+  ?>
 
 
 
