@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>404 Not Found — Hardware Deals</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .notfound-wrapper { max-width:900px; margin:60px auto; text-align:center; padding:24px; }
+    .notfound-card { background:#fff; padding:32px; border-radius:10px; box-shadow:0 6px 24px rgba(0,0,0,0.08); }
+    .notfound-code { font-size:96px; font-weight:700; color:#f04e4e; margin:0; }
+    .notfound-title { font-size:28px; margin:8px 0 12px; }
+    .notfound-desc { color:#555; margin-bottom:18px; }
+    .notfound-actions { margin-top:18px; }
+    .notfound-actions button, .notfound-actions a.button { padding:10px 16px; border-radius:6px; border:none; background:#0077cc; color:#fff; text-decoration:none; display:inline-block; }
+    .notfound-actions a.secondary { background:#eee; color:#333; margin-left:8px; padding:10px 14px; }
+    .notfound-search { margin-top:16px; display:flex; justify-content:center; gap:8px; }
+    .notfound-search input { padding:8px 10px; width:320px; border:1px solid #ddd; border-radius:6px; }
+  </style>
+</head>
+<body>
+  <header class="title-header-thing">
+    <div class="logo-title">
+      <img src="logo.png" alt="Logo" class="logo">
+      <h1 class="title" onclick="window.location.href='index.php'">Hardware Deals.lk</h1>
+    </div>
+
+    <div class="search-box">
+      <input type="text" placeholder="Search products..." onkeydown="if(event.key==='Enter') doSearch(this.value)">
+      <button type="button" onclick="doSearch(document.querySelector('.search-box input').value)">🔍</button>
+    </div>
+
+    <div class="cart">
+      <button style="align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; font-size: 24px; color: black; font-weight: 300; line-height: 1; text-align: center; border: none;" onclick="window.location.href='addproduct.php'">+</button>
+      <button>
+        <img src="login.png" alt="Login" style="width:24px; height:24px;" onclick="window.location.href='login.html'">
+      </button>
+      <button>
+        <img src="cart-icon.webp" alt="Cart" style="height:24px;" onclick="window.location.href='cart.php'">
+      </button>
+    </div>
+  </header>
+
+  <main class="notfound-wrapper">
+    <div class="notfound-card">
+      <p class="notfound-code">404</p>
+      <h2 class="notfound-title">Page not found</h2>
+      <p class="notfound-desc">We couldn't find the page you were looking for. It may have been moved or deleted.</p>
+
+      <div class="notfound-actions">
+        <a class="button" href="index.php">Back to Home</a>
+        <a class="secondary" href="contact.html">Contact Support</a>
+      </div>
+
+      <div class="notfound-search">
+        <input type="text" placeholder="Search for products..." id="nf-search">
+        <button type="button" onclick="doSearch(document.getElementById('nf-search').value)">Search</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inside">
+      <div class="footr2">
+        <h3>Hardware Deals.lk</h3>
+        <p>Your trusted source for hardware tools and rentals in Sri Lanka.</p>
+        <p>&copy; 2024 HardwareDeals.lk</p>
+      </div>
+
+      <div class="footr2">
+        <h3>Contact Us</h3>
+        <p>Email: <a href="mailto:info@hardwaredeals.lk">info@hardwaredeals.lk</a></p>
+        <p>Phone: <a href="tel:+94111234567">011 1 1234567</a></p>
+        <p><a href="about.html">About Us</a></p>
+        <p><a href="terms.html">Terms & Conditions</a></p>
+        <p><a href="trackorder.html">Track My Order</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function doSearch(q) {
+      q = (q || '').trim();
+      if (!q) {
+        window.location.href = 'index.php';
+      } else {
+        // basic search landing - adjust later to your search implementation
+        window.location.href = 'index.php?search=' + encodeURIComponent(q);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -89,7 +89,9 @@ if ($res && mysqli_num_rows($res) > 0) {
         <p><strong>Email:</strong> <?php echo htmlspecialchars($user['uEmail']); ?></p>
         <p><strong>Address:</strong> <?php echo htmlspecialchars($user['address']); ?></p>
         <p><strong>Contact:</strong> <?php echo htmlspecialchars($user['contact']); ?></p>
-        <p><strong>Role:</strong> <?php echo ($user['isSeller'] ? 'Seller' : 'Buyer'); ?></p>
+        <p><strong>Role:</strong> <?php echo ($user['isSeller'] ? 'Seller' : 'Buyer'); ?>
+            <button>Switch to <?php echo ($user['isSeller'] ? 'Buyer' : 'Seller'); ?>?</button>
+        </p>
         <p><strong>Orders Completed:</strong> <?php echo htmlspecialchars($user['ordersCompleted']); ?></p>
 
         <div class="profile-actions">
