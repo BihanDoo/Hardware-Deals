@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Product - Hardware Deals.lk</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="viewproduct.css">
+  
+</head>
+<body>
+  <header class="title-header-thing">
+    <div class="logo-title">
+      <img src="logo.png" alt="Logo" class="logo">
+      <h1 class="title" onclick="window.location.href='index.html'">Hardware Deals.lk</h1>
+    </div>
+
+    <div class="search-box">
+      <input type="text" placeholder="Search products...">
+      <button type="submit">🔍</button>
+    </div>
+
+    <div class="cart">
+      <button>
+        <img src="login.png" alt="Login" style="width:24px; height:24px;" onclick="window.location.href='login.html'">
+      </button>
+      <button>
+        <img src="cart-icon.webp" alt="Cart" style=" height:24px;" onclick="window.location.href='cart.html'">
+      </button>
+
+    </div>
+  </header>
+
+
+
+
+
+
+
+  <div class="vprcontainer">
+    <div class="innercontainer">
+
+
+
+    <div class="vprimg">
+  <div class="slider-container">
+    <button class="slider-btn prev" onclick="changeSlide(-1)">❮</button>
+    <div class="main-image">
+      <img id="mainProductImage" src="drilldemo/drill1.jpg" alt="Cordless Drill">
+    </div>
+    <button class="slider-btn next" onclick="changeSlide(1)">❯</button>
+  </div>
+
+  <div class="thumbnail-gallery">
+    <img src="drilldemo/drill1.jpg" class="active-thumb" onclick="setSlide(0)">
+    <img src="drilldemo/2.jpg" onclick="setSlide(1)">
+    <img src="drilldemo/3.jpg" onclick="setSlide(2)">
+    
+
+  </div>
+</div>
+
+    
+
+
+    <div class="vprdetails">
+      <div>
+        <span class="vprbadge">20% OFF</span>
+        <span class="vproldprice">Rs.8500.00</span>
+        <span class="vprprice">Rs.7200.00</span>
+      </div>
+      <div class="vprtitle">Cordless Drill</div>
+      <div class="vprdescription">A powerful cordless drill for all your home and professional needs. Includes battery, charger, and a bits set with a 90 degree bend.</div>
+      <div class="vprseller">Sold by: <span class="sellername">Jaya Stores</span> <span class="ratings">⭐⭐⭐⭐☆</span> <span class="buyercount">(10)</span></div>
+      
+      <div class="vprmeta">Pickup &bull; In Stock &bull; Delivery available</div>
+
+
+      <form class="vpractions">
+        <label for="quantity">Qty:</label>
+        <input type="number" id="quantity" name="quantity" value="1" min="1">
+        <button type="submit" class="addtocartbutton">Add to Cart</button>
+      </form>
+    </div>
+
+    </div>
+    
+    <div>
+        
+        <section class="reviews">
+          <h2>Customer Reviews (3)</h2>
+          
+          <div class="review-list">
+
+            <div class="review">
+            <strong>Nuwan Perera</strong> <span style="color:#ffcc00;">★★★★★</span>
+            <div>Meka maru</div>
+
+          <div class="review-images">
+            <img src="drilldemo/rev1.jpg" alt="Customer image" onclick="openReviewImage(this)">
+          <img src="drilldemo/rev2.jpg" alt="Customer image" onclick="openReviewImage(this)">
+          <img src="drilldemo/rev3.jpg" alt="Customer image" onclick="openReviewImage(this)">
+          </div>
+
+        </div>
+
+
+
+            <div class="review">
+              <strong>Sajini Fernando</strong> <span style="color:#ffcc00;">★★★★★</span>
+              <div>This is a time saver!!! totally worth it</div>
+
+              <div class="review-images">
+            <img src="drilldemo/rev4.jpg" alt="Customer image" onclick="openReviewImage(this)">
+          <img src="drilldemo/rev5.jpg" alt="Customer image" onclick="openReviewImage(this)">
+          
+          </div>
+
+            </div>
+
+
+            <div class="review">
+              <strong>Ruwan Jayasuriya</strong> <span style="color:#ffcc00;">★★★★★</span>
+              <div>delivered in time, seller was responsive. </div>
+            </div>
+
+            <div class="review">
+              <strong>nadeesha nadeesha</strong> <span style="color:#ffcc00;">☆☆☆☆☆</span>
+              <div>Thanks </div>
+            </div>
+
+          </div>
+          <style>
+            
+          </style>
+
+        </section>
+        
+
+    </div>
+    
+  </div>
+
+
+  <footer class="footer" style="margin-top:40px;">
+    <div class="footer-inside">
+      <div class="footr2">
+        <h3>Hardware Deals.lk</h3>
+        <p>Your trusted source for hardware tools and rentals in Sri Lanka.</p>
+        <p>&copy; 2024 HardwareDeals.lk</p>
+      </div>
+      <div class="footr2">
+        <h3>Contact Us</h3>
+        <p>Email: <a href="mailto:info@hardwaredeals.lk">info@hardwaredeals.lk</a></p>
+        <p>Phone: <a href="tel:+94111234567">011 1 1234567</a></p>
+        <p><a href="about.html">About Us</a></p>
+        <p><a href="terms.html">Terms & Conditions</a></p>
+        <p><a href="trackorder.html">Track My Order</a></p>
+      </div>
+    </div>
+  </footer>
+
+
+  <script>
+  function changeImage(img) {
+    document.getElementById('mainProductImage').src = img.src;
+  }
+  
+
+  const images = [
+    "drilldemo/drill1.jpg",
+    "drilldemo/2.jpg",
+    "drilldemo/3.jpg"
+    
+  ];
+
+  let currentSlide = 0;
+
+  function showSlide(index) {
+    const mainImage = document.getElementById("mainProductImage");
+    const thumbs = document.querySelectorAll(".thumbnail-gallery img");
+
+    if (index >= images.length) currentSlide = 0;
+    else if (index < 0) currentSlide = images.length - 1;
+    else currentSlide = index;
+
+   
+
+    mainImage.classList.add("fade-out");
+    setTimeout(() => {
+      mainImage.src = images[currentSlide];
+      mainImage.classList.remove("fade-out");
+    }, 200);
+
+    thumbs.forEach((img, i) => img.classList.toggle("active-thumb", i === currentSlide));
+  }
+
+  function changeSlide(direction) {
+    showSlide(currentSlide + direction);
+  }
+
+  function setSlide(index) {
+    showSlide(index);
+  }
+
+  function openReviewImage(img) {
+    const modal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImg");
+    modal.style.display = "flex";
+    modalImg.src = img.src;
+  }
+
+  function closeReviewImage() {
+    document.getElementById("imageModal").style.display = "none";
+  }
+</script>
+
+
+<div id="imageModal" class="image-modal" onclick="closeReviewImage()">
+  <span class="close-btn">&times;</span>
+  <img class="modal-content" id="modalImg">
+</div>
+
+</body>
+</html>

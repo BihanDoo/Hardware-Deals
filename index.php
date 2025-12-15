@@ -1,20 +1,39 @@
 <!DOCTYPE html>
 <?php session_start();
-if(isset($_SESSION["userName"]))
-{
-    // header('Location: login.html');
+if (!isset($_SESSION["userName"])) {
+  //header('Location: login.html');
 
+} else {
+  $username = $_SESSION["userName"];
+
+  $con = mysqli_connect("localhost", "root", "", "hardwaredeals");
+  if (!$con) {
+    die("Cannot connect to DB Server");
+  }
+
+  // fetch user by email OR name (safe-ish prepared statement)
+  $stmt = mysqli_prepare($con, "SELECT uEmail, `name`, address, contact, profilePic, isSeller, ordersCompleted FROM users WHERE uEmail = ? OR `name` = ? LIMIT 1");
+  mysqli_stmt_bind_param($stmt, "ss", $username, $username);
+  mysqli_stmt_execute($stmt);
+  $res = mysqli_stmt_get_result($stmt);
+
+  $user = null;
+  if ($res && mysqli_num_rows($res) > 0) {
+    $user = mysqli_fetch_assoc($res);
+  }
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Hardware Deals</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <header class="title-header-thing">
     <div class="logo-title">
@@ -28,9 +47,16 @@ if(isset($_SESSION["userName"]))
     </div>
 
     <div class="cart">
-      <button style=" align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; margin: font-size: 24px; color: black; font-weight: 300; line-height: 1; text-align: center; border: none;" onclick="window.location.href='addproduct.php'">+</button>
+      <button style="align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; font-size: 24px; color: black; font-weight: 300; line-height: 1; text-align: center; border: none;" onclick="window.location.href='addproduct.php'">+</button>
       <button>
-        <img src="login.png" alt="Login" style="width:24px; height:24px;" onclick="window.location.href='login.html'">
+        <?php if (!isset($_SESSION["userName"])) { ?>
+
+          <img src="login.png" alt="Login" style="width:24px; height:24px;" onclick="window.location.href='login.html'">
+        <?php
+        } else {
+        ?>
+          <img src="<?php echo htmlspecialchars($user['profilePic'] ? $user['profilePic'] : 'profile-placeholder.png'); ?>" alt="Profile" style="width:24px; height:24px;" onclick="window.location.href='viewProfile.php'">
+        <?php } ?>
       </button>
       <button>
         <img src="cart-icon.webp" alt="Cart" style=" height:24px;" onclick="window.location.href='cart.html'">
@@ -41,106 +67,108 @@ if(isset($_SESSION["userName"]))
 
 
 
-<div class="item-catalog">
+  <div class="item-catalog">
 
-<?php
+    <?php
 
-        $con = mysqli_connect("localhost" , "root" , "" , "hardwaredeals");
+    $con = mysqli_connect("localhost", "root", "", "hardwaredeals");
 
-        if(!$con)
-        {
-            die("Cannot connect to DB Server");
-        }
-
-        $sql = "SELECT products.*, stores.storeName FROM `products` INNER JOIN `stores` ON products.soldByStoreID = stores.storeID";
-
-        $result = mysqli_query($con,$sql);
-
-        if(mysqli_num_rows($result) > 0)
-        {
-            while($row = mysqli_fetch_assoc($result))
-            {
-        ?>
-
-
-
-
-<div class="card" onclick="window.location.href='viewproduct.html'">
-      <img src="<?php echo $row["imgURL"] ; ?>" alt="Card Image" class="cardimg" >
-      <div class="card-content">
-        <span class="badge"><?php echo $row["offTagDescription"] ; ?></span>
-        <div class="pricetag">
-        <?php
-          if (isset($row["oldPrice"])) {
-            
-          
-          
-          
-          
-          ?>
-          <span class="oldprice">Rs.<?php echo $row["oldPrice"] ; ?></span>
-
-
-          <?php
-          }
-          ?>
-          <span class="newprice">Rs.<?php echo $row["newPrice"] ; ?></span>
-        </div>
-        <h3 class="nametitle"><?php echo $row["title"] ; ?></h3>
-        <p class="descriptiontext"><?php echo $row["description"] ; ?></p>
-        <div class="sellerinfo">
-          <span class="soldbytext">Sold by:</span>
-          <span class="sellername"><?php echo $row["storeName"] ; ?></span>
-          <span class="ratings"><?php if($row["rating"]>0) echo str_repeat("⭐", $row["rating"]) ;echo "☆".str_repeat("☆", 4-$row["rating"]) ; ?>
-        </span>
-          <span class="buyercount">(<?php echo $row["reviewCount"] ; ?>)</span>
-        </div>
-        
-        <div class="innercardscontainer">
-
-        
-          <div class="inner1card">
-          <span class="favorite"><?php if($row["pickup"]) echo "Pickup" ; else echo "Delivery" ; ?></span>
-            </div>
-        <div class="inner1card">
-          <span class="favorite"><?php if($row["inStock"]) echo "In Stock" ; else echo "Out of Stock" ; ?></span>
-
-        </div>
-        
-        <br><span class="deliveryavailable"><?php if($row["deliveryAvailable"]) echo "Delivery available." ; else echo "Call for information." ; ?></span>
-        <button class="addtocartbutton"><?php if($row["callToAction"]=="number") echo $row["callToAction"] ; else echo "Add to Cart" ; ?></button>
-        
-      </div>
-      </div>
-   </div>
-
-<?php
+    if (!$con) {
+      die("Cannot connect to DB Server");
     }
-}else{
-  echo "<p>No products found</p>";
-}
-?>
+
+    $sql = "SELECT products.*, stores.storeName FROM `products` INNER JOIN `stores` ON products.soldByStoreID = stores.storeID";
+
+    $result = mysqli_query($con, $sql);
+
+    if (mysqli_num_rows($result) > 0) {
+      while ($row = mysqli_fetch_assoc($result)) {
+    ?>
 
 
 
 
-</div> 
+        <div class="card" onclick="window.location.href='viewproduct.php?id=<?php echo $row["productID"]; ?>'">
+          <img src="<?php echo $row["imgURL"]; ?>" alt="Card Image" class="cardimg">
+          <div class="card-content">
+            <span class="badge"><?php echo $row["offTagDescription"]; ?></span>
+            <div class="pricetag">
+              <?php
+              if (isset($row["oldPrice"])) {
 
 
-<!-- foooooooooooter -->
 
 
-     
-  <footer class="footer" >
+
+              ?>
+                <span class="oldprice">Rs.<?php echo $row["oldPrice"]; ?></span>
+
+
+              <?php
+              }
+              ?>
+              <span class="newprice">Rs.<?php echo $row["newPrice"]; ?></span>
+            </div>
+            <h3 class="nametitle"><?php echo $row["title"]; ?></h3>
+            <p class="descriptiontext"><?php echo $row["description"]; ?></p>
+            <div class="sellerinfo">
+              <span class="soldbytext">Sold by:</span>
+              <span class="sellername"><?php echo $row["storeName"]; ?></span>
+              <span class="ratings"><?php if ($row["rating"] > 0) echo str_repeat("⭐", $row["rating"]);
+                                    echo "☆" . str_repeat("☆", 4 - $row["rating"]); ?>
+              </span>
+              <span class="buyercount">(<?php echo $row["reviewCount"]; ?>)</span>
+            </div>
+
+            <div class="innercardscontainer">
+
+
+              <div class="inner1card">
+                <span class="favorite"><?php if ($row["pickup"]) echo "Pickup";
+                                        else echo "Delivery"; ?></span>
+              </div>
+              <div class="inner1card">
+                <span class="favorite"><?php if ($row["inStock"]) echo "In Stock";
+                                        else echo "Out of Stock"; ?></span>
+
+              </div>
+
+              <br><span class="deliveryavailable"><?php if ($row["deliveryAvailable"]) echo "Delivery available.";
+                                                  else echo "Call for information."; ?></span>
+              <button class="addtocartbutton"><?php if ($row["callToAction"] == "number") echo $row["callToAction"];
+                                              else echo "Add to Cart"; ?></button>
+
+            </div>
+          </div>
+        </div>
+
+    <?php
+      }
+    } else {
+      echo "<p>No products found</p>";
+    }
+    ?>
+
+
+
+
+  </div>
+
+
+  <!-- foooooooooooter -->
+
+
+
+  <footer class="footer">
     <div class="footer-inside">
-      <div class="footr2" >
+      <div class="footr2">
         <h3>Hardware Deals.lk</h3>
         <p>Your trusted source for hardware tools and rentals in Sri Lanka.</p>
         <p>&copy; 2024 HardwareDeals.lk</p>
       </div>
 
 
-      
+
       <div class="footr2">
         <h3>Contact Us</h3>
         <p>Email: <a href="mailto:info@hardwaredeals.lk">info@hardwaredeals.lk</a></p>
@@ -150,9 +178,9 @@ if(isset($_SESSION["userName"]))
         <p><a href="trackorder.html">Track My Order</a></p>
       </div>
     </div>
-    
+
   </footer>
-     
+
 
 
 
@@ -160,8 +188,5 @@ if(isset($_SESSION["userName"]))
 
 
 </body>
+
 </html>
-
-
-
-
