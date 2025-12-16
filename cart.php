@@ -44,6 +44,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 
 
+// if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'proceedToCheckout') {
+//     if (!isset($_SESSION["userName"])) {
+//         header("Location: login.html");
+//         exit;
+//     }
+//     $total = floatval($_POST['total']);
+//     $sql = "INSERT INTO orders (uEmail, total) VALUES ('" . mysqli_real_escape_string($con, $uEmail) . "', " . floatval($_POST['total']) . ")";
+//     mysqli_query($con, $sql);
+//     header("Location: checkout.php");
+//     exit;
+// }
+
 
 
 
@@ -161,7 +173,10 @@ if ($result && mysqli_num_rows($result) > 0) {
     <div class="cart-summary">
         <span class="total-label" style="font-weight:600; margin-right:8px;">Total:</span>
         <span class="total-value" style="font-weight:600;">Rs.<?php echo number_format($total, 2); ?></span>
-        <button class="checkout-btn" style="margin-left:16px;" onclick="window.location.href='checkout.php'">Proceed to Checkout</button>
+        <form method="post" action="checkout.php">
+            <input type="hidden" name="total" value="<?php echo number_format($total, 2); ?>">
+            <button class="checkout-btn" style="margin-left:16px;" type="submit">Proceed to Checkout</button>
+        </form>
     </div>
 
 
