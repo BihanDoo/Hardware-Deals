@@ -1,52 +1,296 @@
-<!DOCTYPE html>
 <?php
-
+ob_start();
 session_start();
+
 if (!isset($_SESSION["userName"])) {
-  header('Location:login.html');
+  header("Location: login.html");
+  exit;
 }
+
+$username = $_SESSION["userName"];
 
 $con = mysqli_connect("localhost", "root", "", "hardwaredeals");
 if (!$con) {
-  die("Cannot upload the file, Please choose another file");
-} else {
-  $sql = "SELECT storeID FROM `stores` WHERE storeContactUEmail = '" . $_SESSION["userName"] . "'";
-  $storeid = mysqli_query($con, $sql);
+  die("Cannot connect to DB Server");
+}
 
-  $sql = "SELECT storeName FROM `stores` WHERE storeContactUEmail = '" . $_SESSION["userName"] . "'";
-  $result = mysqli_query($con, $sql);
-  $storename = "";
-  if ($result && mysqli_num_rows($result) > 0) {
-    $row = mysqli_fetch_assoc($result);
-    $storename = $row["storeName"];
-    $storenamenotfound = 0;
+// Get store info safely
+$storename = "not found";
+$storenamenotfound = 1;
+$storeid = null;
+
+$storeStmt = mysqli_prepare($con, "SELECT storeID, storeName FROM stores WHERE storeContactUEmail = ? LIMIT 1");
+mysqli_stmt_bind_param($storeStmt, "s", $username);
+mysqli_stmt_execute($storeStmt);
+$storeRes = mysqli_stmt_get_result($storeStmt);
+if ($storeRes && mysqli_num_rows($storeRes) > 0) {
+  $storeRow = mysqli_fetch_assoc($storeRes);
+  $storeid = (int)$storeRow["storeID"];
+  $storename = $storeRow["storeName"];
+  $storenamenotfound = 0;
+}
+
+// Load user for profilePic etc.
+$user = null;
+$userStmt = mysqli_prepare($con, "SELECT uEmail, `name`, address, contact, profilePic, isSeller, ordersCompleted FROM users WHERE uEmail = ? OR `name` = ? LIMIT 1");
+mysqli_stmt_bind_param($userStmt, "ss", $username, $username);
+mysqli_stmt_execute($userStmt);
+$userRes = mysqli_stmt_get_result($userStmt);
+if ($userRes && mysqli_num_rows($userRes) > 0) {
+  $user = mysqli_fetch_assoc($userRes);
+}
+
+// Editing mode
+$productID = null;
+$editing = false;
+$existingProduct = null;
+$existingImages = array();
+
+
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnSubmit'])) {
+  
+  if ($storenamenotfound == 1 || $storeid === null) {
+    echo "<div class='message error'>You don't have a store yet.</div>";
+    exit;
+  }
+
+  $title = trim($_POST["prodctitle"] ?? "");
+  $description = trim($_POST["prodcdescription"] ?? "");
+  $Price = $_POST["Price"] ?? null;
+  $category = $_POST["category"] ?? null;
+  $searchtags = trim($_POST["searchtags"] ?? "");
+  $offTagDescription = trim($_POST["offTagDescription"] ?? "");
+
+  $instock = isset($_POST["inStock"]) ? 1 : 0;
+  $deliveryAvailable = isset($_POST["deliveryAvailable"]) ? 1 : 0;
+  $pickup = isset($_POST["pickup"]) ? 1 : 0;
+
+  $forRent = isset($_POST["forRent"]) ? 1 : 0;
+  $wholesale = ($forRent === 1) ? 0 : (isset($_POST["wholesale"]) ? 1 : 0);
+
+  // callToAction handling
+  $callToAction = null;
+  if (isset($_POST["callforprice"]) || !empty($_POST["callToAction"])) {
+    $callToAction = trim($_POST["callToAction"] ?? "");
+  }
+
+  // Main image upload handling
+  $mainimage = $existingProduct['imgURL'] ?? null;
+
+  if (isset($_FILES["mainimg"]) && isset($_FILES["mainimg"]["error"]) && $_FILES["mainimg"]["error"] === UPLOAD_ERR_OK) {
+    $uploadDir = "uploads/";
+    if (!file_exists($uploadDir)) {
+      mkdir($uploadDir, 0777, true);
+    }
+
+    $ext = strtolower(pathinfo($_FILES["mainimg"]["name"], PATHINFO_EXTENSION));
+    $allowedExt = ["jpg", "jpeg", "png", "webp"];
+    if (!in_array($ext, $allowedExt)) {
+      echo "<div class='message error'>Main image must be JPG/PNG/WEBP.</div>";
+      exit;
+    }
+
+    $mainimage = $uploadDir . time() . "_main_" . uniqid() . "." . $ext;
+    move_uploaded_file($_FILES["mainimg"]["tmp_name"], $mainimage);
   } else {
-    $storename = "not found";
-    $storenamenotfound = 1;
+    // If adding new product, main image is required
+    if (!$editing) {
+      echo "<div class='message error'>Please upload a main image.</div>";
+      exit;
+    }
+  }
+
+  // Multiple images upload (saved to productimgs table)
+  $uploadedImages = array();
+  if (
+    isset($_FILES["imgs"], $_FILES["imgs"]["name"]) &&
+    is_array($_FILES["imgs"]["name"]) &&
+    count($_FILES["imgs"]["name"]) > 0
+  ) {
+    $uploadDir = "uploads/";
+    if (!file_exists($uploadDir)) {
+      mkdir($uploadDir, 0777, true);
+    }
+
+    $allowedExtMulti = ["jpg", "jpeg", "png", "webp"];
+    $fileCount = count($_FILES["imgs"]["name"]);
+    for ($i = 0; $i < $fileCount; $i++) {
+      if (
+        isset($_FILES["imgs"]["error"][$i]) &&
+        $_FILES["imgs"]["error"][$i] === UPLOAD_ERR_OK &&
+        !empty($_FILES["imgs"]["name"][$i])
+      ) {
+        $ext = strtolower(pathinfo($_FILES["imgs"]["name"][$i], PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowedExtMulti)) {
+          // Skip invalid file types silently
+          continue;
+        }
+
+        $uniqueName = $uploadDir . time() . "_img_" . $i . "_" . uniqid() . "." . $ext;
+        if (move_uploaded_file($_FILES["imgs"]["tmp_name"][$i], $uniqueName)) {
+          $uploadedImages[] = $uniqueName;
+        }
+      }
+    }
+  }
+
+  // INSERT vs UPDATE
+  if ($editing && isset($_POST["productID"]) && ctype_digit((string)$_POST["productID"])) {
+    $pid = (int)$_POST["productID"];
+
+    $upStmt = mysqli_prepare($con, "
+  UPDATE products
+  SET imgURL = ?, offTagDescription = ?, newPrice = ?, title = ?, description = ?,
+      soldByStoreID = ?, deliveryAvailable = ?, callToAction = ?, pickup = ?,
+      inStock = ?, forRent = ?, wholesale = ?, searchTags = ?, categoryID = ?
+  WHERE productID = ? AND soldByStoreID = ?
+");
+    mysqli_stmt_bind_param(
+      $upStmt,
+      "ssdssiisiiiisiii",
+      $mainimage,
+      $offTagDescription,
+      $Price,
+      $title,
+      $description,
+      $storeid,
+      $deliveryAvailable,
+      $callToAction,
+      $pickup,
+      $instock,
+      $forRent,
+      $wholesale,
+      $searchtags,
+      $category,
+      $pid,
+      $storeid
+    );
+
+    if (mysqli_stmt_execute($upStmt)) {
+      // Save new additional images if any were uploaded
+      if (!empty($uploadedImages)) {
+        $imgStmt = mysqli_prepare($con, "INSERT INTO productimgs (productID, imgURL) VALUES (?, ?)");
+        if ($imgStmt) {
+          foreach ($uploadedImages as $imgPath) {
+            mysqli_stmt_bind_param($imgStmt, "is", $pid, $imgPath);
+            mysqli_stmt_execute($imgStmt);
+          }
+          mysqli_stmt_close($imgStmt);
+        }
+      }
+
+      header("Location: viewprofile.php");
+      exit;
+    } else {
+      echo "<div class='message error'>Update failed: " . htmlspecialchars(mysqli_error($con)) . "</div>";
+    }
+  } else {
+    $inStmt = mysqli_prepare($con, "
+  INSERT INTO products
+  (imgURL, offTagDescription, oldPrice, newPrice, title, description, soldByStoreID,
+   reviewCount, rating, deliveryAvailable, callToAction, pickup, inStock, forRent,
+   wholesale, searchTags, categoryID)
+  VALUES (?, ?, NULL, ?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?, ?, ?, ?, ?)
+");
+
+    mysqli_stmt_bind_param(
+      $inStmt,
+      "ssdssiisiiiisi",
+      $mainimage,
+      $offTagDescription,
+      $Price,
+      $title,
+      $description,
+      $storeid,
+      $deliveryAvailable,
+      $callToAction,
+      $pickup,
+      $instock,
+      $forRent,
+      $wholesale,
+      $searchtags,
+      $category
+    );
+
+    if (mysqli_stmt_execute($inStmt)) {
+      $newProductId = mysqli_insert_id($con);
+
+      if ($newProductId && !empty($uploadedImages)) {
+        $imgStmt = mysqli_prepare($con, "INSERT INTO productimgs (productID, imgURL) VALUES (?, ?)");
+        if ($imgStmt) {
+          foreach ($uploadedImages as $imgPath) {
+            mysqli_stmt_bind_param($imgStmt, "is", $newProductId, $imgPath);
+            mysqli_stmt_execute($imgStmt);
+          }
+          mysqli_stmt_close($imgStmt);
+        }
+      }
+
+      header("Location: viewprofile.php");
+      exit;
+    } else {
+      echo "<div class='message error'>Insert failed: " . htmlspecialchars(mysqli_error($con)) . "</div>";
+    }
+  }
+
+
+
+
+
+
+  if ($ok) {
+      header("Location: viewprofile.php");
+      exit;
+  }
+
+  $error = "Insert failed"; // store error instead of echoing immediately
+}
+
+
+
+
+
+if (isset($_GET['id']) && ctype_digit((string)$_GET['id'])) {
+  $productID = (int)$_GET['id'];
+  $editing = true;
+
+  // IMPORTANT: also make sure this product belongs to this store
+  $prodStmt = mysqli_prepare($con, "SELECT * FROM products WHERE productID = ? AND soldByStoreID = ? LIMIT 1");
+  mysqli_stmt_bind_param($prodStmt, "ii", $productID, $storeid);
+  mysqli_stmt_execute($prodStmt);
+  $prodRes = mysqli_stmt_get_result($prodStmt);
+
+  if ($prodRes && mysqli_num_rows($prodRes) > 0) {
+    $existingProduct = mysqli_fetch_assoc($prodRes);
+
+    // Load existing images (main + gallery) using same approach as viewproduct.php
+    if (!empty($existingProduct['imgURL'])) {
+      $existingImages[] = $existingProduct['imgURL']; // main first
+    }
+    $imgStmt = mysqli_prepare($con, "SELECT imgURL FROM productimgs WHERE productID = ? ORDER BY imgID");
+    if ($imgStmt) {
+      mysqli_stmt_bind_param($imgStmt, "i", $productID);
+      mysqli_stmt_execute($imgStmt);
+      $imgRes = mysqli_stmt_get_result($imgStmt);
+      if ($imgRes && mysqli_num_rows($imgRes) > 0) {
+        while ($imgRow = mysqli_fetch_assoc($imgRes)) {
+          if ($imgRow['imgURL'] !== ($existingProduct['imgURL'] ?? '')) {
+            $existingImages[] = $imgRow['imgURL'];
+          }
+        }
+      }
+      mysqli_stmt_close($imgStmt);
+    }
+  } else {
+    $editing = false;
+    $productID = null;
   }
 }
-
-
-$username = $_SESSION["userName"];
-  
-
-$stmt = mysqli_prepare($con, "SELECT uEmail, `name`, address, contact, profilePic, isSeller, ordersCompleted FROM users WHERE uEmail = ? OR `name` = ? LIMIT 1");
-mysqli_stmt_bind_param($stmt, "ss", $username, $username);
-mysqli_stmt_execute($stmt);
-$res = mysqli_stmt_get_result($stmt);
-
-$user = null;
-if ($res && mysqli_num_rows($res) > 0) {
-  $user = mysqli_fetch_assoc($res);
-}
-
-if(isset($_GET['id'])) {
-  $productID = $_GET['id'];
-} else {
-  $productID = null;
-}
-
 ?>
+<!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -209,8 +453,8 @@ if(isset($_GET['id'])) {
       <button>
         <?php if (!isset($_SESSION["userName"])) { ?>
 
-          <img src="login.png" alt="Login" style="width:24px; height:24px;" onclick="window.location.href='login.html'">
-          <?php header("Location: login.html"); ?>
+          <!-- <img src="login.png" alt="Login" style="width:24px; height:24px;" onclick="window.location.href='login.html'"> -->
+          
         <?php
         } else {
         ?>
@@ -224,40 +468,61 @@ if(isset($_GET['id'])) {
   </header>
 
   <div class="addproduct-container">
-    <div class="addproduct-title">Add New Product</div>
+    <div class="addproduct-title">
+      <?php echo $editing ? 'Edit Product' : 'Add New Product'; ?>
+    </div>
 
     <form class="addproduct-form" method="POST" action="addproduct.php" enctype="multipart/form-data" autocomplete="off">
+      <?php if ($editing && $productID !== null) { ?>
+        <input type="hidden" name="productID" value="<?php echo htmlspecialchars($productID); ?>">
+      <?php } ?>
       <div>
         <label for="prodctitle">Product Title</label>
-        <input type="text" id="prodctitle" name="prodctitle" placeholder="Title" required>
+        <input type="text" id="prodctitle" name="prodctitle" placeholder="Title" required value="<?php echo $existingProduct ? htmlspecialchars($existingProduct['title']) : ''; ?>">
       </div>
 
       <div>
         <label for="description">Description</label>
-        <textarea style=" display: flex; align-items: center; justify-content: center;" id="description" name="prodcdescription" placeholder="enter product description" required></textarea>
+        <textarea style=" display: flex; align-items: center; justify-content: center;" id="description" name="prodcdescription" placeholder="enter product description" required><?php echo $existingProduct ? htmlspecialchars($existingProduct['description']) : ''; ?></textarea>
       </div>
 
       <div>
         <label for="mainimg">Upload main image(preview):</label>
-        <input type="file" id="mainimg" name="mainimg" accept="image/*" required>
+        <input type="file" id="mainimg" name="mainimg" accept="image/*" <?php echo $editing ? '' : 'required'; ?>>
+        <?php if ($editing && $existingProduct && !empty($existingProduct['imgURL'])) { ?>
+          <div style="margin-top:8px;">
+            <span>Current image:</span><br>
+            <img src="<?php echo htmlspecialchars($existingProduct['imgURL']); ?>" alt="Current image" style="max-width:120px; max-height:120px; object-fit:cover; border-radius:6px; border:1px solid #ccc;">
+          </div>
+        <?php } ?>
       </div>
 
       <div>
         <label for="imgs">Images (Select multiple)</label>
         <input type="file" id="imgs" name="imgs[]" accept="image/*" multiple onchange="previewImages(this)">
         <div id="imagePreview" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
+        <?php if ($editing && !empty($existingImages)) { ?>
+          <div style="margin-top:10px;">
+            <strong>Current images:</strong>
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:6px;">
+              <?php foreach ($existingImages as $img): ?>
+                <img src="<?php echo htmlspecialchars($img); ?>" alt="Existing image" style="width:80px; height:80px; object-fit:cover; border:1px solid #ccc; border-radius:6px;">
+              <?php endforeach; ?>
+            </div>
+          </div>
+        <?php } ?>
       </div>
 
       <div class="form-row">
 
         <div>
           <label for="Price">Price (Rs.)</label>
-          <input type="number" id="Price" name="Price" step="0.01" min="0">
+          <input type="number" id="Price" name="Price" step="0.01" min="0" value="<?php echo $existingProduct ? htmlspecialchars($existingProduct['newPrice']) : ''; ?>">
 
         </div>
         <div style="display: flex; align-items: center; justify-content: center;">
           <div class="checkbox-group">
-            <input type="checkbox" name="callforprice" id="callforprice" onchange="disablethis('Price', this.checked); document.getElementById('callToAction').required = this.checked;">
+            <input type="checkbox" name="callforprice" id="callforprice" onchange="disablethis('Price', this.checked); document.getElementById('callToAction').required = this.checked; document.getElementById('Price').value='0.00';">
             <label for="callforprice">Call for price</label>
           </div>
 
@@ -266,24 +531,22 @@ if(isset($_GET['id'])) {
 
       <div>
         <label for="offTagDescription">Offer Tag (if any)</label>
-        <input type="text" id="offTagDescription" name="offTagDescription" placeholder="20% OFF">
+        <input type="text" id="offTagDescription" name="offTagDescription" placeholder="20% OFF" value="<?php echo $existingProduct ? htmlspecialchars($existingProduct['offTagDescription']) : ''; ?>">
       </div>
 
       <?php
-      // Fetch categories
-      $con = mysqli_connect("localhost", "root", "", "hardwaredeals");
-      $categories = array();
-      if ($con) {
-        $categoryQuery = "SELECT categoryID, categoryName FROM categories";
-        $categoryResult = mysqli_query($con, $categoryQuery);
-        if ($categoryResult) {
-          while ($row = mysqli_fetch_assoc($categoryResult)) {
-            $categories[] = $row;
-          }
-        }
-        mysqli_close($con);
-      }
-      ?>
+
+$categories = [];
+$categoryQuery = "SELECT categoryID, categoryName FROM categories";
+$categoryResult = mysqli_query($con, $categoryQuery);
+if ($categoryResult) {
+  while ($row = mysqli_fetch_assoc($categoryResult)) {
+    $categories[] = $row;
+  }
+}
+?>
+
+
 
       <div>
         <label for="category">Category</label>
@@ -291,7 +554,11 @@ if(isset($_GET['id'])) {
           <option value="">-- Select Category --</option>
           <!-- select all categories, snippet from AI -->
           <?php foreach ($categories as $cat): ?>
-            <option value="<?php echo htmlspecialchars($cat['categoryID']); ?>"><?php echo htmlspecialchars($cat['categoryName']); ?></option>
+            <option value="<?php echo htmlspecialchars($cat['categoryID']); ?>" <?php
+                                                                                if ($existingProduct && isset($existingProduct['categoryID']) && (string)$existingProduct['categoryID'] === (string)$cat['categoryID']) {
+                                                                                  echo 'selected';
+                                                                                }
+                                                                                ?>><?php echo htmlspecialchars($cat['categoryName']); ?></option>
           <?php endforeach; ?>
         </select>
       </div>
@@ -306,14 +573,37 @@ if(isset($_GET['id'])) {
 
       <div>
         <label for="callToAction">Contact number</label>
-        <input type="text" id="callToAction" name="callToAction" value="">
+        <input type="text" id="callToAction" name="callToAction" value="<?php
+
+                                                                        if ($existingProduct == null) {
+                                                                          echo '';
+                                                                        } else {
+                                                                          if ($existingProduct['callToAction'] == null) {
+                                                                            echo '';
+                                                                          } else {
+                                                                            echo htmlspecialchars($existingProduct['callToAction'] ?? '');
+                                                                          }
+                                                                        }
+                                                                        ?>">
       </div>
 
       <div>
         <div class="checkbox-group">
-          <input type="checkbox" id="pickup" name="pickup" checked=true>
+          <input type="checkbox" id="pickup" name="pickup" <?php
+                                                            if ($existingProduct) {
+                                                              echo ((int)$existingProduct['pickup'] === 1) ? 'checked' : '';
+                                                            } else {
+                                                              echo 'checked';
+                                                            }
+                                                            ?>>
           <label for="pickup">Pickup Available</label>
-          <input type="checkbox" id="deliveryAvailable" name="deliveryAvailable" checked=true>
+          <input type="checkbox" id="deliveryAvailable" name="deliveryAvailable" <?php
+                                                                                  if ($existingProduct) {
+                                                                                    echo ((int)$existingProduct['deliveryAvailable'] === 1) ? 'checked' : '';
+                                                                                  } else {
+                                                                                    echo 'checked';
+                                                                                  }
+                                                                                  ?>>
           <label for="deliveryAvailable">Delivery Available</label>
         </div>
 
@@ -321,25 +611,41 @@ if(isset($_GET['id'])) {
 
       <div>
         <div class="checkbox-group">
-          <input type="checkbox" id="inStock" name="inStock" checked=true>
+          <input type="checkbox" id="inStock" name="inStock" <?php
+                                                              if ($existingProduct) {
+                                                                echo ((int)$existingProduct['inStock'] === 1) ? 'checked' : '';
+                                                              } else {
+                                                                echo 'checked';
+                                                              }
+                                                              ?>>
           <label for="inStock">In Stock</label>
 
-          <input type="checkbox" id="forRent" name="forRent" onchange="disablethis('wholesale', this.checked)">
+          <input type="checkbox" id="forRent" name="forRent" onchange="disablethis('wholesale', this.checked)" <?php
+                                                                                                                if ($existingProduct) {
+                                                                                                                  echo ((int)$existingProduct['forRent'] === 1) ? 'checked' : '';
+                                                                                                                }
+                                                                                                                ?>>
           <label for="forRent">For Rent?</label>
 
-          <input type="checkbox" id="wholesale" name="wholesale" checked=true>
+          <input type="checkbox" id="wholesale" name="wholesale" <?php
+                                                                  if ($existingProduct) {
+                                                                    echo ((int)$existingProduct['wholesale'] === 1) ? 'checked' : '';
+                                                                  } else {
+                                                                    echo 'checked';
+                                                                  }
+                                                                  ?>>
           <label for="wholesale">Wholesale? (uncheck for retail)</label>
         </div>
       </div>
 
       <div>
         <label for="searchtags">Search Tags</label>
-        <input type="text" id="searchtags" name="searchtags" placeholder="separate by a comma">
+        <input type="text" id="searchtags" name="searchtags" placeholder="separate by a comma" value="<?php echo $existingProduct ? htmlspecialchars($existingProduct['searchTags']) : ''; ?>">
       </div>
 
-
-
-      <button type="submit" id="btnSubmit" name="btnSubmit" class="addproduct-btn">Add Product</button>
+      <button type="submit" id="btnSubmit" name="btnSubmit" class="addproduct-btn">
+        <?php echo $editing ? 'Update Product' : 'Add Product'; ?>
+      </button>
 
 
 
@@ -349,152 +655,12 @@ if(isset($_GET['id'])) {
       </div>
     </form>
     <?php
-    if (isset($_POST["btnSubmit"])) {
-      $title = $_POST["prodctitle"];
-      $description = $_POST["prodcdescription"];
-      $Price = $_POST["Price"];
+    // if (isset($_POST["btnSubmit"])) {
 
-
-
-
-      if (isset($_POST["inStock"])) {
-        $instock = 1;
-      } else {
-        $instock = 0;
-      }
-
-      if (isset($_POST["deliveryAvailable"])) {
-        $deliveryAvailable = 1;
-      } else {
-        $deliveryAvailable = 0;
-      }
-
-      if (isset($_POST["callforprice"])) {
-        $callToAction = $_POST["callToAction"];
-      } else {
-        if (isset($_POST["callToAction"])) {
-          $callToAction = $_POST["callToAction"];
-        } else {
-          $callToAction = NULL;
-        }
-      }
-
-      if (isset($_POST["pickup"])) {
-        $pickup = 1;
-      } else {
-        $pickup = 0;
-      }
-
-      if (isset($_POST["forRent"])) {
-        $forRent = 1;
-        // When forRent is checked, wholesale is disabled, so set a default value
-        // Based on database schema default is 1, but you may want to change this
-        $wholesale = 0; // or set to 1 if that's your preference
-      } else {
-        $forRent = 0;
-        if (isset($_POST["wholesale"])) {
-          $wholesale = 1;
-        } else {
-          $wholesale = 0;
-        }
-      }
-
-
-
-      if (isset($_POST["offTagDescription"])) {
-        $offTagDescription = $_POST["offTagDescription"];
-      } else {
-        $offTagDescription = NULL;
-      }
-
-
-      $searchtags = $_POST["searchtags"];
-
-
-      if (isset($_POST["inStock"])) {
-        $instock = 1;
-      } else {
-        $instock = 0;
-      }
-
-
-      $category = $_POST["category"];
-
-      $mainimage = "uploads/" . basename($_FILES["mainimg"]["name"]);
-      move_uploaded_file($_FILES["mainimg"]["tmp_name"], $mainimage);
-
-
-      // -----------------------img upoads section(multiple image handling code from AI)------------------------
-      //
-      $uploadDir = "uploads/";
-      if (!file_exists($uploadDir)) {
-        mkdir($uploadDir, 0777, true);
-      }
-
-      $uploadedImages = array(); // image paths into an arraqy
-
-      // Check if files were uploaded (using array notation imgs[])
-      //if(isset($_FILES["imgs"]) && is_array($_FILES["imgs"]["name"]) && !empty($_FILES["imgs"]["name"][0])) {
-      // Handle multiple files
-      $fileCount = count($_FILES["imgs"]["name"]);
-
-      // Loop through all uploaded files
-      for ($i = 0; $i < $fileCount; $i++) {
-        // Check if file was actually uploaded (not empty) and no errors
-        if (
-          isset($_FILES["imgs"]["error"][$i]) &&
-          $_FILES["imgs"]["error"][$i] === UPLOAD_ERR_OK &&
-          !empty($_FILES["imgs"]["name"][$i])
-        ) {
-
-          $fileName = $_FILES["imgs"]["name"][$i];
-          $fileTmpName = $_FILES["imgs"]["tmp_name"][$i];
-          $fileSize = $_FILES["imgs"]["size"][$i];
-          $fileType = $_FILES["imgs"]["type"][$i];
-
-          // Validate file type (images only)
-          $allowedTypes = array('image/jpeg', 'image/jpg', 'image/png');
-          if (in_array($fileType, $allowedTypes)) {
-            // Generate unique filename to avoid conflicts
-            $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-            $uniqueFileName = time() . '_' . $i . '_' . uniqid() . '.' . $fileExtension;
-            $destination = $uploadDir . $uniqueFileName;
-
-            // Move uploaded file to destination
-            if (move_uploaded_file($fileTmpName, $destination)) {
-              $uploadedImages[] = $destination; // Store the path
-            }
-          }
-        }
-      }
-      //}
-
-
-      // $uploadedImages now contains array of all uploaded image paths
-      // You can use this array to save to database or JSON file
-      // Example: $imagesString = implode(',', $uploadedImages); // For comma-separated string
-
-
-      $con = mysqli_connect("localhost", "root", "", "hardwaredeals");
-      if (!$con) {
-        die("Cannot upload the file, Please choose another file");
-      }
-      $sql = "SELECT storeID FROM `stores` WHERE storeContactUEmail = '" . $_SESSION["userName"] . "'";
-      $storeidResult = mysqli_query($con, $sql);
-      $storeidRow = mysqli_fetch_assoc($storeidResult);
-      $storeid = $storeidRow["storeID"];
-
-      $sql = "INSERT INTO `products` (`productID`, `imgURL`, `offTagDescription`, `oldPrice`, `newPrice`, `title`, `description`, `soldByStoreID`, `reviewCount`, `rating`, `deliveryAvailable`, `callToAction`, `pickup`, `inStock`, `forRent`, `wholesale`, `searchTags`,`categoryID`) 
-                VALUES (NULL, '" . $mainimage . "', '" . $offTagDescription . "', NULL, '" . $Price . "', '" . $title . "', '" . $description . "', '" . $storeid . "', NULL, NULL, '" . $deliveryAvailable . "', '" . $callToAction . "', '" . $pickup . "', '" . $instock . "', '" . $forRent . "', '" . $wholesale . "', '" . $searchtags . "','" . $category . "')";
-
-      if (mysqli_query($con, $sql)) {
-        echo "Post uploaded Successfully";
-        header("Location: viewprofile.php");
-      } else {
-        echo "Error: " . mysqli_error($con);
-      }
-    }
+      
+    // }
     ?>
+
 
   </div>
 

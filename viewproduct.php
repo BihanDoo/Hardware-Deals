@@ -245,9 +245,19 @@ if ($product) {
 
                 <!-- -------------------------------------------------------------------- -->
 
-                <?php if (($_GET['review'] ?? '') === 'rating'): ?>
-                    <div style="color:crimson; margin:8px 0;">Please select a rating.</div>
-                <?php endif; ?>
+                <?php
+                // show review submission status messages
+                $reviewStatus = $_GET['review'] ?? '';
+                if ($reviewStatus === 'rating') {
+                    echo '<div style="color:crimson; margin:8px 0;">Please select a rating.</div>';
+                } elseif ($reviewStatus === 'empty') {
+                    echo '<div style="color:crimson; margin:8px 0;">Review text cannot be empty.</div>';
+                } elseif ($reviewStatus === 'fail') {
+                    echo '<div style="color:crimson; margin:8px 0;">Something went wrong while saving your review. Please try again.</div>';
+                } elseif ($reviewStatus === 'ok') {
+                    echo '<div style="color:green; margin:8px 0;">Thank you! Your review has been submitted.</div>';
+                }
+                ?>
 
                 <form class="review-form" action="submitreview.php" method="POST" enctype="multipart/form-data">
                     <h3 style="margin:0 0 8px 0; font-size:1.1rem;">Write a review</h3>
@@ -256,7 +266,7 @@ if ($product) {
                         <span style="font-size:0.95rem; color:#555;">Your rating:</span>
 
                         <div style="display:flex; gap:6px;">
-                            <input id="rate5" type="radio" name="rating" value="5" required class="sr-only">
+                            <input id="rate5" type="radio" name="rating" value="5" required class="sr-only" onchange="document.getElementById('ratingHint').innerText='Click a star to rate';">
                             <label for="rate5" style="cursor:pointer;"><span title="5 stars" style="color:#ffb400; font-size:1.05rem;">★</span></label>
 
                             <input id="rate4" type="radio" name="rating" value="4" class="sr-only">
@@ -409,7 +419,7 @@ if ($product) {
 
                         $con = mysqli_connect("localhost", "root", "", "hardwaredeals");
                         $sql = "SELECT r.reviewID, r.reviewText, r.rating, u.name FROM productreviews r JOIN users u ON r.uEmail = u.uEmail WHERE r.productID = '" . mysqli_real_escape_string($con, $productID) . "' ORDER BY r.reviewID DESC";
-
+                        
                         $result = mysqli_query($con, $sql);
                         while ($row = mysqli_fetch_assoc($result)) {
                             $reviewerName = htmlspecialchars($row['name']);

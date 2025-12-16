@@ -17,11 +17,13 @@ session_start();
             {
                 $_SESSION["userName"] = $userName;
                 header('Location:index.php');
+                exit;
             }
             else
             {
                 
                 header('Location:login.html');
+                exit;
             }
         }
     }

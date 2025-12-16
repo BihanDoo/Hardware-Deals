@@ -126,7 +126,17 @@ if (!isset($_SESSION["userName"])) {
               <?php
               }
               ?>
-              <span class="newprice">Rs.<?php echo $row["newPrice"]; ?></span>
+              <?php 
+              if($row["newPrice"] == 0.00){
+                ?>
+                <span class="newprice">Call for price</span>
+                <?php
+              }else{
+                ?>
+                <span class="newprice">Rs.<?php echo $row["newPrice"]; ?></span>
+                <?php
+              }
+              ?>
             </div>
             <h3 class="nametitle"><?php echo $row["title"]; ?></h3>
             <p class="descriptiontext"><?php echo $row["description"]; ?></p>
@@ -152,10 +162,7 @@ if (!isset($_SESSION["userName"])) {
 
               </div>
 
-              <?php if ($row["deliveryAvailable"]) { ?>
-
-
-                <br><span class="deliveryavailable"><?php echo "Delivery available."; ?></span>
+              <?php if ($row["deliveryAvailable"]) { ?> <br><span class="deliveryavailable"><?php echo "Delivery available."; ?></span>
                 <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
                   <input type="hidden" name="productID" value="<?php echo $row['productID']; ?>">
                   <button class="addtocartbutton"><?php echo "Add to Cart"; ?></button>

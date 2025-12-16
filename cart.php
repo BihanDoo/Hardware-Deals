@@ -19,6 +19,7 @@ if (!isset($_SESSION["userName"])) {
         $user = mysqli_fetch_assoc($result);
     }
 }
+$profilePic = (!empty($user) && !empty($user['profilePic'])) ? $user['profilePic'] : 'profile-placeholder.png';
 $uEmail = $_SESSION["userName"];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
@@ -45,10 +46,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
 
 
-$con = mysqli_connect("localhost", "root", "", "hardwaredeals");
-if (!$con) {
-    die("Cannot connect to DB Server");
-}
+
+
+
+
 
 
 
@@ -104,7 +105,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 
         <div class="cart">
             <button>
-                <img src="<?php echo htmlspecialchars($user['profilePic'] ? $user['profilePic'] : 'profile-placeholder.png'); ?>" onclick="window.location.href='viewProfile.php'" alt="Profile" style="width:24px; height:24px;">
+            <img src="<?php echo htmlspecialchars($profilePic); ?>" alt="Profile" style="width:24px; height:24px;" onclick="window.location.href='viewProfile.php'">
             </button>
         </div>
     </header>

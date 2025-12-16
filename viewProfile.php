@@ -172,7 +172,7 @@ if (isset($_POST['editProduct']) && isset($_POST['productID'])) {
         <?php } ?>
       </button>
       <button>
-        <img src="cart-icon.webp" alt="Cart" style=" height:24px;" onclick="window.location.href='cart.html'">
+        <img src="cart-icon.webp" alt="Cart" style=" height:24px;" onclick="window.location.href='cart.php'">
       </button>
     </div>
   </header>
@@ -187,7 +187,7 @@ if (isset($_POST['editProduct']) && isset($_POST['productID'])) {
       </div>
     <?php } else { 
       $profilePic = (!$user || empty($user['profilePic'])) ? 'profile-placeholder.png' : $user['profilePic'];
-
+    }
       ?>
       <div class="profile-card">
         <img src="<?php echo htmlspecialchars($profilePic); ?>" alt="Profile Picture">
@@ -245,15 +245,18 @@ if (isset($_POST['editProduct']) && isset($_POST['productID'])) {
               $productsResult = mysqli_stmt_get_result($stmt2);
 
               if ($productsResult && mysqli_num_rows($productsResult) > 0) {
-                while ($product = mysqli_fetch_assoc($productsResult)) {
-                  echo "<tr>";
-                  echo "<td>" . htmlspecialchars($product['productID']) . "</td>";
-                  echo "<td>" . htmlspecialchars($product['title']) . "</td>";
-                  echo "<td>Rs." . number_format((float)$product['newPrice'], 2) . "</td>";
-                  echo "<td>" . ($product['inStock']
-                    ? (is_null($product['stockQty']) ? "In Stock" : intval($product['stockQty']) . " units")
-                    : "Out of Stock") . "</td>";?>
-                    
+                while ($product = mysqli_fetch_assoc($productsResult)) { ?>
+                  <tr>
+                    <td><?php echo htmlspecialchars($product['productID']); ?></td>
+                    <td><?php echo htmlspecialchars($product['title']); ?></td>
+                    <td>Rs.<?php echo number_format((float)$product['newPrice'], 2); ?></td>
+                    <td>
+                      <?php
+                        echo ($product['inStock']
+                          ? (is_null($product['stockQty']) ? "In Stock" : intval($product['stockQty']) . " units")
+                          : "Out of Stock");
+                      ?>
+                    </td>
                     <td>
                       <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
                         <input type="hidden" name="productID" value="<?php echo htmlspecialchars($product['productID']); ?>">
@@ -261,9 +264,8 @@ if (isset($_POST['editProduct']) && isset($_POST['productID'])) {
                         <button type="submit" name="deleteProduct" onclick="return confirm('Are you sure you want to delete this product?');">Delete</button>
                       </form>
                     </td>
-
-                    <?php
-                  
+                  </tr>
+                <?php  
                 }
               } else {
                 echo "<tr><td colspan='5' style='text-align:center; color:#666;'>No products yet</td></tr>";
@@ -297,7 +299,7 @@ if (isset($_POST['editProduct']) && isset($_POST['productID'])) {
           </tbody>
         </table>
       <?php } ?>
-    <?php } ?>
+    <?php  ?>
   </div>
 
   <!-- ...existing footer (same theme as index.php) ... -->
