@@ -32,16 +32,7 @@ $profilePic = (!$user || empty($user['profilePic']))
   : $user['profilePic'];
 
 
-if(isset($_POST['total'])){
-  $total = $_POST['total'];
-  $uEmail = $_SESSION["userName"];
-  
-  
-}
-else{
-  header("Location: cart.php");
-  exit;
-}
+
 //ordercommited table is used to store the orders that have been committed. same function as cart table but with orderID and status.
 // //1	uEmail	varchar(100)		
 // 	2	orderID	int			
@@ -49,19 +40,59 @@ else{
 // 	4	qty	int			
 // 	5	status	varchar(100)	+
 
-if(isset($_POST['placeOrder'])){
-  $uEmail = $_SESSION["userName"];
-  $total = $_POST['total'];
-    $sql = "INSERT INTO ordercommited (uEmail, total, status, orderID) VALUES ('" . mysqli_real_escape_string($con, $uEmail) . "', " . floatval($_POST['total']) . ", 'pending', " . floatval($_POST['total']) . ")";
-    mysqli_query($con, $sql);
-  $orderID = mysqli_insert_id($con);
-  foreach($_SESSION['cart'] as $productID => $qty){
-    $sql = "INSERT INTO ordercommited (uEmail, orderID, productID, qty, status) VALUES ('" . mysqli_real_escape_string($con, $uEmail) . "', " . floatval($_POST['total']) . ", " . floatval($_POST['total']) . ", 'pending')";
-    mysqli_query($con, $sql);
+if (isset($_POST['placeOrder'])) {
+
+    $uEmail = $_SESSION["userName"];
+    $status = "pending";
+  
+    // Start transaction so insert+delete happen together
+    mysqli_begin_transaction($con);
+  
+    // 1) Make a new orderID (since ordercommited doesn't look auto-increment)
+    $res = mysqli_query($con, "SELECT COALESCE(MAX(orderID),0)+1 AS nextID FROM ordercommited");
+    if (!$res) { mysqli_rollback($con); die(mysqli_error($con)); }
+    $row = mysqli_fetch_assoc($res);
+    $orderID = (int)$row["nextID"];
+  
+    // 2) Read all items from cart table for this user
+    $stmt = mysqli_prepare($con, "SELECT productID, qty FROM cart WHERE uEmail=?");
+    mysqli_stmt_bind_param($stmt, "s", $uEmail);
+    if (!mysqli_stmt_execute($stmt)) { mysqli_rollback($con); die(mysqli_error($con)); }
+    $items = mysqli_stmt_get_result($stmt);
+  
+    // If no items, stop
+    if (mysqli_num_rows($items) === 0) {
+      mysqli_rollback($con);
+      header("Location: cart.php");
+      exit;
+    }
+  
+    // 3) Insert each cart item into ordercommited
+    $ins = mysqli_prepare($con,
+      "INSERT INTO ordercommited (uEmail, orderID, productID, qty, status)
+       VALUES (?, ?, ?, ?, ?)"
+    );
+  
+    while ($it = mysqli_fetch_assoc($items)) {
+      $pid = (int)$it["productID"];
+      $qty = (int)$it["qty"];
+  
+      mysqli_stmt_bind_param($ins, "siiis", $uEmail, $orderID, $pid, $qty, $status);
+      if (!mysqli_stmt_execute($ins)) { mysqli_rollback($con); die(mysqli_error($con)); }
+    }
+  
+    // 4) Remove items from cart table
+    $del = mysqli_prepare($con, "DELETE FROM cart WHERE uEmail=?");
+    mysqli_stmt_bind_param($del, "s", $uEmail);
+    if (!mysqli_stmt_execute($del)) { mysqli_rollback($con); die(mysqli_error($con)); }
+  
+    // Done
+    mysqli_commit($con);
+  
+    header("Location: trackorder.php?orderID=" . $orderID);
+    exit;
   }
-  header("Location: trackorder.php?orderID=" . $orderID);
-  exit;
-}
+  
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -370,7 +401,7 @@ if(isset($_POST['placeOrder'])){
         <div class="order-summary-title">Order summary</div>
         <ul class="summary-items">
           <!-- TODO: Replace this sample item list with dynamic cart items from database -->
-          <li class="summary-item">
+          
             <div>
               <div class="summary-item-name">Your cart items</div>
               <?php
@@ -378,7 +409,9 @@ if(isset($_POST['placeOrder'])){
             //   uEmail Primary	varchar(100)
 	//	productID Primary	int			
 	//	qty
+    $uEmail = $_SESSION["userName"];
               $sql = "SELECT p.title, p.newPrice, c.qty FROM cart c JOIN products p ON c.productID = p.productID WHERE c.uEmail = '" . mysqli_real_escape_string($con, $uEmail) . "'";
+              
               $result = mysqli_query($con, $sql);
               while($row = mysqli_fetch_assoc($result)){
                 echo "<div class='summary-item'>";
@@ -393,12 +426,24 @@ if(isset($_POST['placeOrder'])){
 
             </div>
             
-          </li>
+          
         </ul>
 
         <div class="summary-row">
           <span>Subtotal</span>
-          <span>Rs.<?php echo $total; ?></span>
+          <span>Rs.<?php
+          $uEmail = $_SESSION["userName"];
+          $sumRes = mysqli_query($con, "
+            SELECT SUM(p.newPrice * c.qty) AS total
+            FROM cart c
+            JOIN products p ON c.productID = p.productID
+            WHERE c.uEmail = '" . mysqli_real_escape_string($con, $uEmail) . "'
+          ");
+          $totalRow = mysqli_fetch_assoc($sumRes);
+          $total = $totalRow['total'] ?? 0;
+          
+          
+          echo $total; ?></span>
         </div>
         <div class="summary-row">
           <span>Delivery</span>
@@ -410,7 +455,8 @@ if(isset($_POST['placeOrder'])){
         </div>
 
         <input type="hidden" name="userEmail" value="<?php echo $user ? htmlspecialchars($user['uEmail']) : ''; ?>">
-        <button type="submit" class="place-order-btn">Place order</button>
+        <button type="submit" name="placeOrder" class="place-order-btn">Place order</button>
+
         <div class="checkout-note">By placing this order, you agree to our Terms &amp; Conditions.</div>
       </aside>
    </form>
