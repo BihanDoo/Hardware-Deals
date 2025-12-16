@@ -1,3 +1,34 @@
+<?php
+session_start();
+if (!isset($_SESSION["userName"])) {
+  header("Location: login.html");
+  exit;
+}
+
+$uEmail = $_SESSION["userName"];
+$orderID = $_GET['orderID'];
+$con = mysqli_connect("localhost", "root", "", "hardwaredeals");
+if (!$con) {
+  die("Cannot connect to DB Server");
+}
+
+$sql = "SELECT * FROM ordercommited WHERE orderID = " . $orderID . " AND uEmail = '" . mysqli_real_escape_string($con, $uEmail) . "'";
+$result = mysqli_query($con, $sql);
+$row = mysqli_fetch_assoc($result);
+if (!$row) {
+  header("Location: cart.php");
+  exit;
+}
+
+
+
+
+?>
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -58,10 +89,10 @@ color: #3b82f6;}
           <li class="step active">Shipped</li>
           <li class="step">Delivered</li>
         </ul>
-
+      <p><strong>Order ID:</strong> </p>
         <div class="status-card">
-          <p><strong>Order ID:</strong> #HD20251008</p>
-          <p><strong>Estimated Delivery:</strong> October 12, 2025</p>
+          <p><strong>Product name:</strong> product name</p>
+          <p><strong>Product ID:</strong> </p>
           <p><strong>Current Status:</strong> In Transit</p>
         </div>
       </div>
