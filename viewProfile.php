@@ -292,11 +292,57 @@ if (isset($_POST['editProduct']) && isset($_POST['productID'])) {
             </tr>
           </thead>
           <tbody>
-            <?php  ?>
-            <tr>
-              <td colspan="5" style="text-align:center; color:#666;">No orders yet </td>
-            </tr>
-          </tbody>
+<?php
+  // Completed orders for THIS user (uses ordercommited + products, and uses orders table if available)
+  $sqlOrders = "
+    SELECT
+      oc.orderID,
+      COALESCE(o.orderDate, NULL) AS orderDate,
+      COALESCE(o.status, oc.status) AS status,
+      GROUP_CONCAT(CONCAT(p.title, ' x', oc.qty) SEPARATOR ', ') AS items,
+      SUM(COALESCE(p.newPrice, 0) * oc.qty) AS total
+    FROM ordercommited oc
+    LEFT JOIN orders o
+      ON o.orderID = oc.orderID AND o.uEmail = oc.uEmail
+    JOIN products p
+      ON p.productID = oc.productID
+    WHERE oc.uEmail = ?
+      AND LOWER(COALESCE(o.status, oc.status)) IN ('completed','delivered')
+    GROUP BY oc.orderID, o.orderDate, COALESCE(o.status, oc.status)
+    ORDER BY o.orderDate DESC, oc.orderID DESC
+  ";
+
+  $stmtO = mysqli_prepare($con, $sqlOrders);
+  mysqli_stmt_bind_param($stmtO, "s", $user['uEmail']);
+  mysqli_stmt_execute($stmtO);
+  $ordersRes = mysqli_stmt_get_result($stmtO);
+
+  if ($ordersRes && mysqli_num_rows($ordersRes) > 0) {
+    while ($oRow = mysqli_fetch_assoc($ordersRes)) {
+      $dateTxt = $oRow['orderDate'] ? htmlspecialchars($oRow['orderDate']) : "-";
+      $statusTxt = htmlspecialchars($oRow['status']);
+      $itemsTxt = htmlspecialchars($oRow['items']);
+
+      $totalVal = (float)$oRow['total'];
+      $totalTxt = ($totalVal <= 0) ? "Call for price" : "Rs." . number_format($totalVal, 2);
+?>
+      <tr>
+        <td><?php echo htmlspecialchars($oRow['orderID']); ?></td>
+        <td><?php echo $itemsTxt; ?></td>
+        <td><?php echo $totalTxt; ?></td>
+        <td><?php echo $dateTxt; ?></td>
+        <td><?php echo $statusTxt; ?></td>
+      </tr>
+<?php
+    }
+  } else {
+?>
+    <tr>
+      <td colspan="5" style="text-align:center; color:#666;">No completed orders yet</td>
+    </tr>
+<?php } ?>
+</tbody>
+
         </table>
       <?php } ?>
     <?php  ?>

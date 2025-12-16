@@ -1,4 +1,6 @@
 <?php session_start();
+
+$q = trim($_GET["q"] ?? "");
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   if (!isset($_SESSION["userName"])) {
     header("Location: login.html");
@@ -57,13 +59,15 @@ if (!isset($_SESSION["userName"])) {
   <header class="title-header-thing">
     <div class="logo-title">
       <img src="logo.png" alt="Logo" class="logo">
-      <h1 class="title" onclick="window.location.href='index.html'">Hardware Deals.lk</h1>
+      <h1 class="title" onclick="window.location.href='index.php'">Hardware Deals.lk</h1>
+
     </div>
 
-    <div class="search-box">
-      <input type="text" placeholder="Search products...">
-      <button type="submit">🔍</button>
-    </div>
+    <form class="search-box" method="get" action="index.php">
+  <input type="text" name="q" placeholder="Search products..."
+         value="<?php echo htmlspecialchars($q); ?>">
+  <button type="submit">🔍</button>
+</form>
 
     <div class="cart">
       <button style="align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; font-size: 24px; color: black; font-weight: 300; line-height: 1; text-align: center; border: none;" onclick="window.location.href='addproduct.php'">+</button>
@@ -96,9 +100,21 @@ if (!isset($_SESSION["userName"])) {
       die("Cannot connect to DB Server");
     }
 
-    $sql = "SELECT products.*, stores.storeName FROM `products` INNER JOIN `stores` ON products.soldByStoreID = stores.storeID";
+    $sql = "SELECT products.*, stores.storeName
+        FROM `products`
+        INNER JOIN `stores` ON products.soldByStoreID = stores.storeID";
 
-    $result = mysqli_query($con, $sql);
+if ($q !== "") {
+  $sql .= " WHERE products.title LIKE ?";
+  $stmt = mysqli_prepare($con, $sql);
+  $like = "%" . $q . "%";
+  mysqli_stmt_bind_param($stmt, "s", $like);
+  mysqli_stmt_execute($stmt);
+  $result = mysqli_stmt_get_result($stmt);
+} else {
+  $result = mysqli_query($con, $sql);
+}
+
 
     if (mysqli_num_rows($result) > 0) {
       while ($row = mysqli_fetch_assoc($result)) {
@@ -163,7 +179,7 @@ if (!isset($_SESSION["userName"])) {
               </div>
 
               <?php if ($row["deliveryAvailable"]) { ?> <br><span class="deliveryavailable"><?php echo "Delivery available."; ?></span>
-                <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+                <form method="post" action="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
                   <input type="hidden" name="productID" value="<?php echo $row['productID']; ?>">
                   <button class="addtocartbutton"><?php echo "Add to Cart"; ?></button>
                 </form>

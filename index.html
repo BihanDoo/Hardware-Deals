@@ -417,7 +417,12 @@
   </footer>
      
 
-
+<script>
+//redirect to index.php always
+if (window.location.pathname.endsWith("index.html")) {
+    window.location.href = "index.php";
+}
+</script>
 
 
 
