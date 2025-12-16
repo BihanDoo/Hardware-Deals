@@ -23,9 +23,9 @@ if ($res && mysqli_num_rows($res) > 0) {
   $user = mysqli_fetch_assoc($res);
 }
 
-if (isset($_POST['switchRole']) && isset($_POST['userEmail'])) {
+if (isset($_POST['switchRole'])) {
   $newRole = $_POST['switchRole'] === 'Seller' ? 1 : 0;
-  $userEmail = $_POST['userEmail'];
+  $userEmail = $user['uEmail'];
   if (!$user) {
     header("Location: login.html");
     exit;
@@ -41,12 +41,18 @@ if (isset($_POST['switchRole']) && isset($_POST['userEmail'])) {
     mysqli_stmt_bind_param($updateStmt, "is", $newRole, $userEmail);
     mysqli_stmt_execute($updateStmt);
 
-    $sql = "INSERT INTO `stores` (`storeContactUEmail`, `storeName`, `storeBio`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `storeContactUEmail` = `storeContactUEmail`";
-    $storeName = $user['name'];
+    $sql = "INSERT INTO `stores` (`storeContactUEmail`, `storeName`, `storeBio`, `storeLocation`)
+        VALUES (?, ?, ?, ?)";
 
+    // $storeLocation = "";
+    // mysqli_stmt_bind_param($insertStmt, "ssss", $userEmail, $storeName, $storeBio, $storeLocation);
+
+    $storeName = $user['name'];
     $storeBio = "Welcome to " . $storeName . "'s store!";
+    $storeLocation = ""; // you can put "Colombo" etc.
+
     $insertStmt = mysqli_prepare($con, $sql);
-    mysqli_stmt_bind_param($insertStmt, "sss", $userEmail, $storeName, $storeBio);
+    mysqli_stmt_bind_param($insertStmt, "ssss", $userEmail, $storeName, $storeBio, $storeLocation);
     mysqli_stmt_execute($insertStmt);
   } else {
     //if switching to buyer, no extra action needed
@@ -197,7 +203,8 @@ if (isset($_POST['editProduct']) && isset($_POST['productID'])) {
         <p><strong>Address:</strong> <?php echo htmlspecialchars($user['address']); ?></p>
         <p><strong>Contact:</strong> <?php echo htmlspecialchars($user['contact']); ?></p>
         <strong>Role:</strong> <?php echo ($user['isSeller'] ? 'Seller' : 'Buyer'); ?>
-        <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+        <form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+
           <input type="hidden" name="userEmail" value="<?php echo htmlspecialchars($user['uEmail']); ?>">
           <button type="submit" name="switchRole" value="<?php echo ($user['isSeller'] ? 'Buyer' : 'Seller'); ?>">Switch to <?php echo ($user['isSeller'] ? 'Buyer' : 'Seller'); ?>?</button>
         </form>
