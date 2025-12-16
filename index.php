@@ -30,7 +30,7 @@ if (!isset($_SESSION["userName"])) {
     die("Cannot connect to DB Server");
   }
 
-  // fetch user by email OR name (safe-ish prepared statement)
+  // fetch user by email OR name
   $stmt = mysqli_prepare($con, "SELECT uEmail, `name`, address, contact, profilePic, isSeller, ordersCompleted FROM users WHERE uEmail = ? OR `name` = ? LIMIT 1");
   mysqli_stmt_bind_param($stmt, "ss", $username, $username);
   mysqli_stmt_execute($stmt);
