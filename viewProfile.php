@@ -185,116 +185,116 @@ if (isset($_POST['editProduct']) && isset($_POST['productID'])) {
           <p>Could not find your profile in the database.</p>
         </div>
       </div>
-    <?php } else { 
+    <?php } else {
       $profilePic = (!$user || empty($user['profilePic'])) ? 'profile-placeholder.png' : $user['profilePic'];
     }
-      ?>
-      <div class="profile-card">
-        <img src="<?php echo htmlspecialchars($profilePic); ?>" alt="Profile Picture">
-        <div class="profile-details">
-          <h2><?php echo htmlspecialchars($user['name']); ?></h2>
-          <p><strong>Email:</strong> <?php echo htmlspecialchars($user['uEmail']); ?></p>
-          <p><strong>Address:</strong> <?php echo htmlspecialchars($user['address']); ?></p>
-          <p><strong>Contact:</strong> <?php echo htmlspecialchars($user['contact']); ?></p>
-          <strong>Role:</strong> <?php echo ($user['isSeller'] ? 'Seller' : 'Buyer'); ?>
-          <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-            <input type="hidden" name="userEmail" value="<?php echo htmlspecialchars($user['uEmail']); ?>">
-            <button type="submit" name="switchRole" value="<?php echo ($user['isSeller'] ? 'Buyer' : 'Seller'); ?>">Switch to <?php echo ($user['isSeller'] ? 'Buyer' : 'Seller'); ?>?</button>
-          </form>
+    ?>
+    <div class="profile-card">
+      <img src="<?php echo htmlspecialchars($profilePic); ?>" alt="Profile Picture">
+      <div class="profile-details">
+        <h2><?php echo htmlspecialchars($user['name']); ?></h2>
+        <p><strong>Email:</strong> <?php echo htmlspecialchars($user['uEmail']); ?></p>
+        <p><strong>Address:</strong> <?php echo htmlspecialchars($user['address']); ?></p>
+        <p><strong>Contact:</strong> <?php echo htmlspecialchars($user['contact']); ?></p>
+        <strong>Role:</strong> <?php echo ($user['isSeller'] ? 'Seller' : 'Buyer'); ?>
+        <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+          <input type="hidden" name="userEmail" value="<?php echo htmlspecialchars($user['uEmail']); ?>">
+          <button type="submit" name="switchRole" value="<?php echo ($user['isSeller'] ? 'Buyer' : 'Seller'); ?>">Switch to <?php echo ($user['isSeller'] ? 'Buyer' : 'Seller'); ?>?</button>
+        </form>
 
-          <p><strong>Orders Completed:</strong> <?php echo htmlspecialchars($user['ordersCompleted']); ?></p>
+        <p><strong>Orders Completed:</strong> <?php echo htmlspecialchars($user['ordersCompleted']); ?></p>
 
-          <div class="profile-actions">
-            <button onclick="window.location.href='editProfile.php'">Edit Profile</button>
-            <button onclick="window.location.href='index.php'">Back to Shop</button>
-            <button onclick="window.location.href='logout.php'">Logout</button>
-          </div>
+        <div class="profile-actions">
+          <button onclick="window.location.href='editProfile.php'">Edit Profile</button>
+          <button onclick="window.location.href='index.php'">Back to Shop</button>
+          <button onclick="window.location.href='logout.php'">Logout</button>
         </div>
       </div>
+    </div>
 
-      <?php if ($user['isSeller']) { ?>
-        <h3 style="margin-top:18px;">Your Products</h3>
+    <?php if ($user['isSeller']) { ?>
+      <h3 style="margin-top:18px;">Your Products</h3>
 
-        <table class="profile-table">
-          <thead>
-            <tr>
-              <th>Product ID</th>
-              <th>Title</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+      <table class="profile-table">
+        <thead>
+          <tr>
+            <th>Product ID</th>
+            <th>Title</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
 
-            <?php
-            $sql = "SELECT storeID FROM stores WHERE storeContactUEmail = ?";
-            $stmt = mysqli_prepare($con, $sql);
-            mysqli_stmt_bind_param($stmt, "s", $user['uEmail']);
-            mysqli_stmt_execute($stmt);
-            $result = mysqli_stmt_get_result($stmt);
+          <?php
+          $sql = "SELECT storeID FROM stores WHERE storeContactUEmail = ?";
+          $stmt = mysqli_prepare($con, $sql);
+          mysqli_stmt_bind_param($stmt, "s", $user['uEmail']);
+          mysqli_stmt_execute($stmt);
+          $result = mysqli_stmt_get_result($stmt);
 
-            if ($result && mysqli_num_rows($result) > 0) {
-              $storeRow = mysqli_fetch_assoc($result);
-              $storeID = (int)$storeRow['storeID'];
+          if ($result && mysqli_num_rows($result) > 0) {
+            $storeRow = mysqli_fetch_assoc($result);
+            $storeID = (int)$storeRow['storeID'];
 
-              $sql = "SELECT * FROM products WHERE soldByStoreID = ?";
-              $stmt2 = mysqli_prepare($con, $sql);
-              mysqli_stmt_bind_param($stmt2, "i", $storeID);
-              mysqli_stmt_execute($stmt2);
-              $productsResult = mysqli_stmt_get_result($stmt2);
+            $sql = "SELECT * FROM products WHERE soldByStoreID = ?";
+            $stmt2 = mysqli_prepare($con, $sql);
+            mysqli_stmt_bind_param($stmt2, "i", $storeID);
+            mysqli_stmt_execute($stmt2);
+            $productsResult = mysqli_stmt_get_result($stmt2);
 
-              if ($productsResult && mysqli_num_rows($productsResult) > 0) {
-                while ($product = mysqli_fetch_assoc($productsResult)) { ?>
-                  <tr>
-                    <td><?php echo htmlspecialchars($product['productID']); ?></td>
-                    <td><?php echo htmlspecialchars($product['title']); ?></td>
-                    <td>Rs.<?php echo number_format((float)$product['newPrice'], 2); ?></td>
-                    <td>
-                      <?php
-                        echo ($product['inStock']
-                          ? (is_null($product['stockQty']) ? "In Stock" : intval($product['stockQty']) . " units")
-                          : "Out of Stock");
-                      ?>
-                    </td>
-                    <td>
-                      <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-                        <input type="hidden" name="productID" value="<?php echo htmlspecialchars($product['productID']); ?>">
-                        <button type="submit" name="editProduct">Edit</button>
-                        <button type="submit" name="deleteProduct" onclick="return confirm('Are you sure you want to delete this product?');">Delete</button>
-                      </form>
-                    </td>
-                  </tr>
-                <?php  
-                }
-              } else {
-                echo "<tr><td colspan='5' style='text-align:center; color:#666;'>No products yet</td></tr>";
+            if ($productsResult && mysqli_num_rows($productsResult) > 0) {
+              while ($product = mysqli_fetch_assoc($productsResult)) { ?>
+                <tr>
+                  <td><?php echo htmlspecialchars($product['productID']); ?></td>
+                  <td><?php echo htmlspecialchars($product['title']); ?></td>
+                  <td>Rs.<?php echo number_format((float)$product['newPrice'], 2); ?></td>
+                  <td>
+                    <?php
+                    echo ($product['inStock']
+                      ? (is_null($product['stockQty']) ? "In Stock" : intval($product['stockQty']) . " units")
+                      : "Out of Stock");
+                    ?>
+                  </td>
+                  <td>
+                    <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+                      <input type="hidden" name="productID" value="<?php echo htmlspecialchars($product['productID']); ?>">
+                      <button type="submit" name="editProduct">Edit</button>
+                      <button type="submit" name="deleteProduct" onclick="return confirm('Are you sure you want to delete this product?');">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+          <?php
               }
             } else {
-              echo "<tr><td colspan='5' style='text-align:center; color:#666;'>No store found for this seller</td></tr>";
+              echo "<tr><td colspan='5' style='text-align:center; color:#666;'>No products yet</td></tr>";
             }
-            ?>
+          } else {
+            echo "<tr><td colspan='5' style='text-align:center; color:#666;'>No store found for this seller</td></tr>";
+          }
+          ?>
 
-            
-          </tbody>
-        </table>
-      <?php } else { ?>
-        <h3 style="margin-top:18px;">Completed Orders</h3>
 
-        <table class="profile-table">
-          <thead>
-            <tr>
-              <th>Order ID</th>
-              <th>Items</th>
-              <th>Total</th>
-              <th>Date</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-<?php
-  // Completed orders for THIS user (uses ordercommited + products, and uses orders table if available)
-  $sqlOrders = "
+        </tbody>
+      </table>
+    <?php } else { ?>
+      <h3 style="margin-top:18px;">Completed Orders</h3>
+
+      <table class="profile-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php
+          // Completed orders for THIS user (uses ordercommited + products, and uses orders table if available)
+          $sqlOrders = "
     SELECT
       oc.orderID,
       COALESCE(o.orderDate, NULL) AS orderDate,
@@ -312,39 +312,39 @@ if (isset($_POST['editProduct']) && isset($_POST['productID'])) {
     ORDER BY o.orderDate DESC, oc.orderID DESC
   ";
 
-  $stmtO = mysqli_prepare($con, $sqlOrders);
-  mysqli_stmt_bind_param($stmtO, "s", $user['uEmail']);
-  mysqli_stmt_execute($stmtO);
-  $ordersRes = mysqli_stmt_get_result($stmtO);
+          $stmtO = mysqli_prepare($con, $sqlOrders);
+          mysqli_stmt_bind_param($stmtO, "s", $user['uEmail']);
+          mysqli_stmt_execute($stmtO);
+          $ordersRes = mysqli_stmt_get_result($stmtO);
 
-  if ($ordersRes && mysqli_num_rows($ordersRes) > 0) {
-    while ($oRow = mysqli_fetch_assoc($ordersRes)) {
-      $dateTxt = $oRow['orderDate'] ? htmlspecialchars($oRow['orderDate']) : "-";
-      $statusTxt = htmlspecialchars($oRow['status']);
-      $itemsTxt = htmlspecialchars($oRow['items']);
+          if ($ordersRes && mysqli_num_rows($ordersRes) > 0) {
+            while ($oRow = mysqli_fetch_assoc($ordersRes)) {
+              $dateTxt = $oRow['orderDate'] ? htmlspecialchars($oRow['orderDate']) : "-";
+              $statusTxt = htmlspecialchars($oRow['status']);
+              $itemsTxt = htmlspecialchars($oRow['items']);
 
-      $totalVal = (float)$oRow['total'];
-      $totalTxt = ($totalVal <= 0) ? "Call for price" : "Rs." . number_format($totalVal, 2);
-?>
-      <tr>
-        <td><?php echo htmlspecialchars($oRow['orderID']); ?></td>
-        <td><?php echo $itemsTxt; ?></td>
-        <td><?php echo $totalTxt; ?></td>
-        <td><?php echo $dateTxt; ?></td>
-        <td><?php echo $statusTxt; ?></td>
-      </tr>
-<?php
-    }
-  } else {
-?>
-    <tr>
-      <td colspan="5" style="text-align:center; color:#666;">No completed orders yet</td>
-    </tr>
-<?php } ?>
-</tbody>
+              $totalVal = (float)$oRow['total'];
+              $totalTxt = ($totalVal <= 0) ? "Call for price" : "Rs." . number_format($totalVal, 2);
+          ?>
+              <tr>
+                <td><?php echo htmlspecialchars($oRow['orderID']); ?></td>
+                <td><?php echo $itemsTxt; ?></td>
+                <td><?php echo $totalTxt; ?></td>
+                <td><?php echo $dateTxt; ?></td>
+                <td><?php echo $statusTxt; ?></td>
+              </tr>
+            <?php
+            }
+          } else {
+            ?>
+            <tr>
+              <td colspan="5" style="text-align:center; color:#666;">No completed orders yet</td>
+            </tr>
+          <?php } ?>
+        </tbody>
 
-        </table>
-      <?php } ?>
+      </table>
+    <?php } ?>
     <?php  ?>
   </div>
 
