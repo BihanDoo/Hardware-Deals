@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Shopping Cart</title>
   <link rel="stylesheet" href="style.css">
-  
+
 </head>
+
 <body>
   <header class="title-header-thing">
     <div class="logo-title">
@@ -23,7 +25,7 @@
       <button>
         <img src="login.png" alt="Login" style="width:24px; height:24px;" onclick="window.location.href='login.html'">
       </button>
-      
+
 
     </div>
   </header>
@@ -32,20 +34,21 @@
   <h2 style="text-align:center; margin-top:30px;">Your Shopping Cart</h2>
 
 
-<!-- enable horizontal scrolling -->
+  <!-- enable horizontal scrolling -->
   <table class="cart-table" style="overflow-x: auto; overflow-x: auto; white-space: nowrap; ">
     <thead>
       <tr>
         <th>Product</th>
-        <th>Name</th><th>Price</th>
-          <th>Qty</th>
-          <th>Subtotal</th>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Qty</th>
+        <th>Subtotal</th>
         <th></th>
       </tr>
     </thead>
     <tbody style="box-sizing: border-box; ">
-      <tr >
-        <td ><img src="product-imgs/cordlessdrill.webp" alt="Cordless Drill"></td>
+      <tr>
+        <td><img src="product-imgs/cordlessdrill.webp" alt="Cordless Drill"></td>
         <td>Cordless Drill</td>
         <td>Rs.7200.00</td>
         <td><input type="number" value="1" min="1" style="width:50px;" onchange="updateTotal()"></td>
@@ -56,15 +59,15 @@
         <td><img src="product-imgs/hammer1.png" alt="Hammer"></td>
         <td>Hammer</td>
         <td>Rs.850.00</td>
-        <td><input type="number" value="2" min="1" style="width:50px;"onchange="updateTotal()"></td>
+        <td><input type="number" value="2" min="1" style="width:50px;" onchange="updateTotal()"></td>
         <td>Rs.1700.00</td>
-        <td><button class="remove-btn"  onclick="removeitem()">Remove</button></td>
+        <td><button class="remove-btn" onclick="removeitem()">Remove</button></td>
       </tr>
       <tr>
         <td><img src="product-imgs/padlock.webp" alt="Padlock"></td>
         <td>Brass Padlock</td>
         <td>Rs.950.00</td>
-        <td><input type="number" value="1" min="1" style="width:50px;"  onchange="updateTotal()"></td>
+        <td><input type="number" value="1" min="1" style="width:50px;" onchange="updateTotal()"></td>
         <td>Rs.950.00</td>
         <td><button class="remove-btn" onclick="removeitem()">Remove</button></td>
       </tr>
@@ -80,7 +83,7 @@
     }
 
 
-    
+
     function updateTotal() {
       let total = 0;
       const rows = document.querySelectorAll('.cart-table tbody tr');
@@ -106,7 +109,7 @@
       <div class="footr2">
 
 
-          <h3>Hardware Deals.lk</h3>
+        <h3>Hardware Deals.lk</h3>
 
         <p>Your trusted source for hardware tools and rentals in Sri Lanka.</p>
         <p>&copy; 2024 HardwareDeals.lk</p>
@@ -127,11 +130,12 @@
 
 
 
-  <script>  
-document.addEventListener('DOMContentLoaded', function() {
-  location.href = 'cart.php';
-});
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      location.href = 'cart.php';
+    });
 
   </script>
 </body>
+
 </html>

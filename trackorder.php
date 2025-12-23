@@ -117,7 +117,7 @@ function step_class(int $current, int $step): string {
 </head>
 <body>
   <header>
-    <div class="title-header-thing">Hardware Deals.lk</div>
+    <div class="title-header-thing" onclick="location.href='index.php'">Hardware Deals.lk</div>
   </header>
 
   <section class="track-section">
