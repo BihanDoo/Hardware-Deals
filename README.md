@@ -81,7 +81,7 @@ you can set up this system by cloning the project and uploading the sql to phpmy
 
 
 #### COPYRIGHT NOTICE  
-Copyright 2025 © Bihandu Sathmira  
+Copyright © 2025 Bihandu Sathmira  
 All rights reserved.  
 
 This source code and associated documentation files (the “Software”)   
