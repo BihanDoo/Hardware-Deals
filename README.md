@@ -1,7 +1,7 @@
 # Hardware Deals
 Want to see the website in action?   
-visit:
-https://hardware-deals.ct.ws/
+visit: <a href="https://hardware-deals.ct.ws/">www.hardware-deals.ct.ws/</a>
+
 
 ## Quick introduction
 This is a website project, which is made for sellers to sell hardware items, like Ebay.  
