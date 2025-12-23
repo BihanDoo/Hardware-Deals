@@ -1,6 +1,6 @@
 # Hardware Deals
 Want to see the website in action?   
-visit: <a href="https://hardware-deals.ct.ws/">www.hardware-deals.ct.ws/</a>
+visit: <a href="https://hardware-deals.ct.ws/">www.hardware-deals.ct.ws</a>
 
 
 ## Quick introduction
