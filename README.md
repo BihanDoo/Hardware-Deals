@@ -74,8 +74,9 @@ users can add reviews into products with images.
 
 
 ## About the code
-Coded in HTML with PHP, uses MySQL as database
-you can set up this system by cloning the project and uploading the sql to phpmyadmin, it creates all the necessary tables to get started with.
+Coded in HTML with PHP, uses MySQL as database  
+you can set up this system by cloning the project and uploading the sql to phpmyadmin.  
+it creates all the necessary tables to get started with.
 
 
 
